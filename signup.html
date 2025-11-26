@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - AgriAI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- Include Supabase configuration -->
+    <script src="supabaseConfig.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1625246333195-78d9c38ad449?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80');
+            background-size: cover;
+            background-position: center;
+            filter: blur(2px);
+            z-index: -1;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 30px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            color: #fff;
+            text-decoration: none;
+            z-index: 10;
+        }
+
+        .back-link-text {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+            margin-left: 2px;
+        }
+
+        .signup-container {
+            border-radius: 25px;
+            margin: 0 auto;
+            max-width: 400px;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .glass-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            border-radius: 25px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-container {
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .icon-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .icon-circle {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid rgba(255, 255, 255, 0.8);
+        }
+
+        .welcome-text {
+            font-size: 28px;
+            font-weight: 800;
+            text-align: center;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+        }
+
+        .subtitle-text {
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .message-container {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .message-container.show {
+            opacity: 1;
+        }
+
+        .error-container {
+            background-color: rgba(255, 59, 48, 0.8);
+        }
+
+        .success-container {
+            background-color: rgba(52, 199, 89, 0.8);
+        }
+
+        .message-text {
+            color: #fff;
+            font-size: 14px;
+            font-weight: 600;
+            margin-left: 8px;
+            flex: 1;
+        }
+
+        .form-container {
+            width: 100%;
+        }
+
+        .input-group {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.4);
+            border-radius: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 0 15px;
+        }
+
+        .input-icon {
+            margin-right: 10px;
+            color: #555;
+        }
+
+        .input {
+            flex: 1;
+            padding: 16px 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        .input::placeholder {
+            color: #666;
+        }
+
+        .signup-button {
+            background-color: rgba(0, 122, 255, 0.85);
+            padding: 16px;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 20px;
+            margin-top: 10px;
+            border: 1px solid rgba(0, 122, 255, 0.3);
+            box-shadow: 0 4px 8px rgba(0, 122, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .signup-button:hover {
+            background-color: rgba(0, 122, 255, 0.95);
+        }
+
+        .signup-button:disabled {
+            background-color: rgba(160, 196, 255, 0.7);
+            cursor: not-allowed;
+        }
+
+        .signup-button-text {
+            color: #fff;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+
+        .divider-line {
+            flex: 1;
+            height: 1px;
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .divider-text {
+            padding: 0 15px;
+            color: #555;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .login-text {
+            color: #333;
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .login-link {
+            color: #007AFF;
+            font-size: 15px;
+            font-weight: 700;
+            text-decoration: underline;
+            margin-left: 5px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #007AFF;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .content-container {
+                padding: 20px;
+            }
+            
+            .welcome-text {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg"></div>
+    
+    <div class="container">
+        <a href="start.html" class="back-link">
+            <i class="fas fa-chevron-left"></i>
+            <span class="back-link-text">back</span>
+        </a>
+
+        <div class="signup-container">
+            <div class="glass-overlay"></div>
+            
+            <div class="content-container">
+                <div class="icon-container">
+                    <div class="icon-circle">
+                        <i class="fas fa-user-plus" style="font-size: 40px; color: #333;"></i>
+                    </div>
+                </div>
+
+                <h1 class="welcome-text">Create Account</h1>
+                <p class="subtitle-text">Sign up to get started</p>
+
+                <div id="messageContainer" class="message-container">
+                    <i id="messageIcon" class="fas fa-exclamation-triangle" style="color: #fff; font-size: 20px;"></i>
+                    <p id="messageText" class="message-text"></p>
+                </div>
+
+                <div class="form-container">
+                    <div class="input-group">
+                        <i class="fas fa-user input-icon"></i>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            class="input" 
+                            placeholder="Full Name"
+                            autocomplete="name"
+                        >
+                    </div>
+
+                    <div class="input-group">
+                        <i class="fas fa-envelope input-icon"></i>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            class="input" 
+                            placeholder="Email address"
+                            autocomplete="email"
+                        >
+                    </div>
+
+                    <div class="input-group">
+                        <i class="fas fa-lock input-icon"></i>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            class="input" 
+                            placeholder="Password (min. 6 characters)"
+                            autocomplete="new-password"
+                        >
+                    </div>
+
+                    <button id="signupButton" class="signup-button">
+                        <span id="signupButtonText" class="signup-button-text">Sign Up</span>
+                    </button>
+                </div>
+
+                <div class="divider">
+                    <div class="divider-line"></div>
+                    <span class="divider-text">OR</span>
+                    <div class="divider-line"></div>
+                </div>
+
+                <div class="login-container">
+                    <span class="login-text">Already have an account?</span>
+                    <a href="login.html" class="login-link">Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // DOM elements
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const signupButton = document.getElementById('signupButton');
+        const signupButtonText = document.getElementById('signupButtonText');
+        const messageContainer = document.getElementById('messageContainer');
+        const messageText = document.getElementById('messageText');
+        const messageIcon = document.getElementById('messageIcon');
+        
+        // State
+        let isLoading = false;
+        
+        // Email validation function
+        const validateEmail = (email) => {
+            const re = /\S+@\S+\.\S+/;
+            return re.test(email);
+        };
+        
+        // Password validation function
+        const validatePassword = (password) => {
+            return password.length >= 6;
+        };
+        
+        // Show message (error or success)
+        const showMessage = (message, isSuccess = false) => {
+            messageText.textContent = message;
+            
+            if (isSuccess) {
+                messageContainer.className = 'message-container success-container show';
+                messageIcon.className = 'fas fa-check-circle';
+            } else {
+                messageContainer.className = 'message-container error-container show';
+                messageIcon.className = 'fas fa-exclamation-triangle';
+            }
+            
+            // Auto-dismiss after 2 seconds
+            setTimeout(() => {
+                messageContainer.classList.remove('show');
+            }, 2000);
+        };
+        
+        // Handle signup
+        const handleSignup = async () => {
+            // Reset message state
+            messageContainer.classList.remove('show');
+            
+            // Get input values
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value;
+            
+            // Validate inputs
+            if (!name || !email || !password) {
+                showMessage('Please fill in all fields.');
+                return;
+            }
+            
+            if (!validateEmail(email)) {
+                showMessage('Please enter a valid email address.');
+                return;
+            }
+            
+            if (!validatePassword(password)) {
+                showMessage('Password must be at least 6 characters.');
+                return;
+            }
+            
+            // Set loading state
+            isLoading = true;
+            signupButton.disabled = true;
+            signupButton.innerHTML = '<div class="spinner"></div>';
+            
+            try {
+                const { data, error } = await window.supabase.auth.signUp({
+                    email,
+                    password,
+                    options: {
+                        data: { name },
+                    },
+                });
+                
+                if (error) throw error;
+                
+                const user = data.user;
+                if (user) {
+                    const { error: insertError } = await window.supabase.from("profiles").insert([
+                        { id: user.id, name, email },
+                    ]);
+                    
+                    if (insertError) {
+                        console.error("Profile insert error:", insertError);
+                        showMessage("Account created but profile not saved.");
+                    }
+                }
+                
+                showMessage('Signup successful! Check your email to confirm your account.', true);
+                
+                // Redirect to login after showing success message
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2500);
+            } catch (err) {
+                showMessage(err.message);
+                console.error("Signup error:", err);
+            } finally {
+                // Reset loading state
+                isLoading = false;
+                signupButton.disabled = false;
+                signupButton.innerHTML = '<span class="signup-button-text">Sign Up</span>';
+            }
+        };
+        
+        // Event listeners
+        signupButton.addEventListener('click', handleSignup);
+        
+        // Allow form submission with Enter key
+        passwordInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                handleSignup();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,2038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriAI - Plant Disease Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: #F5F7FA;
+            color: #2C3E50;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header with Back Button */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+
+        .back-button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-right: 16px;
+            transition: all 0.2s ease;
+        }
+
+        .back-button:hover {
+            background-color: #45a049;
+        }
+
+        .header-content {
+            text-align: center;
+            flex: 1;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #2C3E50;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: #7F8C8D;
+            text-align: center;
+        }
+
+        /* Crop Selection Screen */
+        .crop-selection-container {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .crop-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 16px;
+            margin: 20px 0;
+        }
+
+        .crop-item {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 120px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .crop-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .selected-crop-item {
+            background-color: #E8F5E9;
+            border: 2px solid #4CAF50;
+        }
+
+        .crop-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .crop-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #1F2937;
+            text-align: center;
+        }
+
+        .continue-button {
+            background-color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 0 auto;
+            max-width: 300px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .continue-button:hover {
+            background-color: #45a049;
+        }
+
+        .continue-button:disabled {
+            background-color: #A5D6A7;
+            cursor: not-allowed;
+        }
+
+        .continue-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 8px;
+        }
+
+        /* Prediction Screen */
+        .prediction-container {
+            display: none;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .selected-crop-container {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .selected-crop-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 8px;
+        }
+
+        .selected-crop-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .selected-crop-icon {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .selected-crop-name {
+            font-size: 16px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .change-crop-button {
+            align-self: flex-start;
+            cursor: pointer;
+        }
+
+        .change-crop-text {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        /* Instruction Card */
+        .instruction-card {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .instruction-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 12px;
+        }
+
+        .instruction-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .instruction-item {
+            display: flex;
+            align-items: center;
+        }
+
+        .instruction-text {
+            font-size: 14px;
+            color: #4B5563;
+            margin-left: 8px;
+        }
+
+        /* Image Section */
+        .image-section {
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 12px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .image-button {
+            flex: 1;
+            background-color: #4CAF50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .image-button:hover {
+            background-color: #45a049;
+        }
+
+        .button-text {
+            color: #fff;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .image-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 16px;
+        }
+
+        .image-preview {
+            width: 250px;
+            height: 250px;
+            border-radius: 12px;
+            border: 1px solid #E5E7EB;
+            object-fit: cover;
+        }
+
+        .change-image-button {
+            margin-top: 12px;
+            cursor: pointer;
+        }
+
+        .change-image-text {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        /* Predict Button */
+        .predict-button {
+            background-color: #4CAF50;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .predict-button:hover {
+            background-color: #45a049;
+        }
+
+        .predict-button:disabled {
+            background-color: #A5D6A7;
+            cursor: not-allowed;
+        }
+
+        .predict-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin: 16px 0;
+            text-align: center;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #E0E0E0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background-color: #4CAF50;
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #6B7280;
+        }
+
+        /* Error Messages */
+        .not-leaf-message, .error-message {
+            background-color: #FFEBEE;
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .not-leaf-emoji, .error-emoji {
+            font-size: 24px;
+            margin-right: 8px;
+        }
+
+        .not-leaf-text, .error-text {
+            color: #C62828;
+            font-size: 14px;
+            margin-left: 8px;
+            flex: 1;
+        }
+
+        /* Loading */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 24px 0;
+        }
+
+        .loading-text {
+            margin-top: 12px;
+            color: #6B7280;
+        }
+
+        /* Results Section */
+        .results-section {
+            display: none;
+            margin-top: 24px;
+            background-color: #fff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-card {
+            background-color: #F9FAFB;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 16px;
+        }
+
+        .result-label {
+            font-size: 14px;
+            color: #6B7280;
+            margin-bottom: 4px;
+        }
+
+        .result-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1F2937;
+            margin-bottom: 12px;
+        }
+
+        .image-container {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .result-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 8px;
+            border: 1px solid #E5E7EB;
+            object-fit: cover;
+        }
+
+        .weather-box {
+            background-color: #F0F9FF;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .weather-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1F2937;
+        }
+
+        .suggestion-button {
+            background-color: #FF9800;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .suggestion-button:hover {
+            background-color: #F57C00;
+        }
+
+        .suggestion-button-text {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        .suggestion-box {
+            background-color: #FFF8E1;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+
+        .suggestion-title {
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #1F2937;
+            font-size: 16px;
+        }
+
+        .suggestion-item {
+            margin-bottom: 8px;
+        }
+
+        .bullet-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .bullet-symbol {
+            font-size: 16px;
+            font-weight: bold;
+            color: #FF9800;
+            margin-right: 8px;
+            margin-top: 2px;
+        }
+
+        .bullet-text {
+            flex: 1;
+            font-size: 15px;
+            color: #4B5563;
+            line-height: 22px;
+        }
+
+        .number-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+
+        .number-symbol {
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background-color: #FF9800;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 24px;
+            margin-right: 8px;
+            margin-top: 2px;
+        }
+
+        .number-text {
+            flex: 1;
+            font-size: 15px;
+            color: #4B5563;
+            line-height: 22px;
+        }
+
+        .suggestion-text {
+            font-size: 14px;
+            margin: 4px 0;
+            color: #4B5563;
+        }
+
+        .action-buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 16px;
+        }
+
+        .chat-button {
+            background-color: #3F51B5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .chat-button:hover {
+            background-color: #303F9F;
+        }
+
+        .action-button-text {
+            color: #fff;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .medicines-button {
+            background-color: #9C27B0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .medicines-button:hover {
+            background-color: #7B1FA2;
+        }
+
+        .medicines-button:disabled {
+            background-color: #CE93D8;
+            cursor: not-allowed;
+        }
+
+        .medicines-button-text {
+            color: #fff;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .reset-button {
+            background-color: #F44336;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .reset-button:hover {
+            background-color: #D32F2F;
+        }
+
+        .reset-button-text {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Medicines Modal */
+        .medicines-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #fff;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .medicines-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: #9C27B0;
+            padding: 40px 20px 16px;
+        }
+
+        .close-medicines-button {
+            padding: 8px;
+            border-radius: 20px;
+            cursor: pointer;
+            color: #fff;
+        }
+
+        .medicines-modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .medicines-modal-content {
+            padding: 16px;
+        }
+
+        .medicines-loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 300px;
+        }
+
+        .medicines-loading-text {
+            margin-top: 12px;
+            color: #6B7280;
+        }
+
+        .medicines-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            padding-bottom: 20px;
+        }
+
+        .medicines-empty-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+        }
+
+        .medicines-empty-text {
+            font-size: 16px;
+            color: #6B7280;
+        }
+
+        /* Medicine Card */
+        .medicine-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .medicine-content {
+            display: flex;
+            padding: 15px;
+        }
+
+        .image-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+
+        .medicine-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .medicine-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .medicine-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .medicine-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+
+        .rating-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .rating-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .reviews-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-left: 5px;
+        }
+
+        .medicine-description {
+            font-size: 13px;
+            color: #34495e;
+            margin-bottom: 10px;
+            line-height: 18px;
+        }
+
+        .buy-button {
+            background-color: #3498db;
+            padding: 8px;
+            border-radius: 5px;
+            align-self: flex-start;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .buy-button:hover {
+            background-color: #2980b9;
+        }
+
+        .buy-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Error Modal */
+        .error-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+        }
+
+        .error-modal-content {
+            background-color: #fff;
+            border-radius: 16px;
+            padding: 24px;
+            margin: 20px;
+            width: 85%;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .error-modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+
+        .error-modal-emoji {
+            font-size: 32px;
+            margin-right: 12px;
+        }
+
+        .error-modal-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1F2937;
+        }
+
+        .error-modal-message {
+            font-size: 16px;
+            color: #4B5563;
+            text-align: center;
+            margin-bottom: 20px;
+            line-height: 24px;
+        }
+
+        .error-modal-button {
+            background-color: #4CAF50;
+            padding: 12px;
+            border-radius: 8px;
+            width: 100%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .error-modal-button:hover {
+            background-color: #45a049;
+        }
+
+        .error-modal-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .crop-list {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .image-preview {
+                width: 200px;
+                height: 200px;
+            }
+
+            .result-image {
+                width: 150px;
+                height: 150px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 24px;
+            }
+
+            .subtitle {
+                font-size: 14px;
+            }
+
+            .crop-list {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .image-preview {
+                width: 180px;
+                height: 180px;
+            }
+
+            .result-image {
+                width: 120px;
+                height: 120px;
+            }
+        }
+
+        /* Animations */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #4CAF50;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Crop Selection Screen -->
+        <div id="cropSelectionScreen" class="crop-selection-container">
+            <div class="header">
+                <div class="header-left">
+                    <button class="back-button" id="backButton">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+                <div class="header-content">
+                    <h1 class="title">🌱 Select Crop Type</h1>
+                    <p class="subtitle">Choose the crop you want to analyze for disease detection</p>
+                </div>
+                <div></div>
+            </div>
+
+            <div class="crop-list" id="cropList">
+                <!-- Crop items will be dynamically added here -->
+            </div>
+
+            <button id="continueButton" class="continue-button" disabled>
+                <span class="continue-button-text">Continue</span>
+                <i class="fas fa-arrow-right" style="color: #fff;"></i>
+            </button>
+        </div>
+
+        <!-- Prediction Screen -->
+        <div id="predictionScreen" class="prediction-container">
+            <div class="header">
+                <div class="header-left">
+                    <button class="back-button" id="backButtonPrediction">
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                </div>
+                <div class="header-content">
+                    <h1 class="title">🌱 Plant Disease Detector</h1>
+                    <p class="subtitle">Upload a clear image of your <span id="selectedCropName"></span> leaf for AI-powered disease detection</p>
+                </div>
+                <div></div>
+            </div>
+
+            <!-- Selected Crop Display -->
+            <div class="selected-crop-container">
+                <div class="selected-crop-label">Selected Crop:</div>
+                <div class="selected-crop-info">
+                    <span class="selected-crop-icon" id="selectedCropIcon"></span>
+                    <span class="selected-crop-name" id="selectedCropNameDisplay"></span>
+                </div>
+                <button class="change-crop-button" id="changeCropButton">
+                    <span class="change-crop-text">Change Crop</span>
+                </button>
+            </div>
+
+            <!-- Instructions Card -->
+            <div class="instruction-card">
+                <div class="instruction-title">How to Take a Good Photo</div>
+                <div class="instruction-list">
+                    <div class="instruction-item">
+                        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 20px;"></i>
+                        <span class="instruction-text">Ensure good lighting conditions</span>
+                    </div>
+                    <div class="instruction-item">
+                        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 20px;"></i>
+                        <span class="instruction-text">Focus on a single leaf with visible symptoms</span>
+                    </div>
+                    <div class="instruction-item">
+                        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 20px;"></i>
+                        <span class="instruction-text">Avoid shadows and blurry images</span>
+                    </div>
+                    <div class="instruction-item">
+                        <i class="fas fa-check-circle" style="color: #4CAF50; font-size: 20px;"></i>
+                        <span class="instruction-text">Include both top and bottom of the leaf if possible</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Image Selection Section -->
+            <div class="image-section">
+                <div class="section-title">Select Image</div>
+                
+                <div class="button-group">
+                    <button class="image-button" id="galleryButton">
+                        <i class="fas fa-images" style="color: #fff; font-size: 24px;"></i>
+                        <span class="button-text">Gallery</span>
+                    </button>
+                    <button class="image-button" id="cameraButton">
+                        <i class="fas fa-camera" style="color: #fff; font-size: 24px;"></i>
+                        <span class="button-text">Camera</span>
+                    </button>
+                </div>
+
+                <div class="image-preview-container" id="imagePreviewContainer" style="display: none;">
+                    <img id="imagePreview" class="image-preview" src="" alt="Selected leaf image">
+                    <button class="change-image-button" id="changeImageButton">
+                        <span class="change-image-text">Change Image</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Hidden file input for image selection -->
+            <input type="file" id="fileInput" accept="image/*" style="display: none;">
+
+            <!-- Predict Button -->
+            <button id="predictButton" class="predict-button" style="display: none;" disabled>
+                <span class="predict-button-text">Analyze Image</span>
+            </button>
+
+            <!-- Loading Progress Bar -->
+            <div id="progressContainer" class="progress-container" style="display: none;">
+                <div class="progress-bar">
+                    <div id="progressFill" class="progress-fill"></div>
+                </div>
+                <div class="progress-text">Processing... <span id="progressPercent">0</span>%</div>
+            </div>
+
+            <!-- Error Messages -->
+            <div id="notLeafMessage" class="not-leaf-message" style="display: none;">
+                <span class="not-leaf-emoji">👎</span>
+                <span class="not-leaf-text">This doesn't appear to be a plant leaf. Please upload a valid crop leaf image.</span>
+            </div>
+
+            <div id="errorMessage" class="error-message" style="display: none;">
+                <span class="error-emoji">👎</span>
+                <span class="error-text" id="errorText"></span>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingContainer" class="loading-container" style="display: none;">
+                <div class="spinner"></div>
+                <span class="loading-text">Analyzing image...</span>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results-section">
+                <div class="section-title">📊 Prediction Results</div>
+                
+                <div class="result-card">
+                    <div class="result-label">Crop Type:</div>
+                    <div class="result-text" id="resultCrop"></div>
+                    
+                    <div class="result-label">Disease:</div>
+                    <div class="result-text" id="resultDisease"></div>
+                </div>
+
+                <div class="image-container">
+                    <img id="resultImage" class="result-image" src="" alt="Analyzed leaf image">
+                </div>
+
+                <div id="weatherBox" class="weather-box" style="display: none;">
+                    <div class="weather-title">🌤 Current Weather</div>
+                    <div id="weatherInfo"></div>
+                </div>
+
+                <button id="suggestionButton" class="suggestion-button" style="display: none;">
+                    <span class="suggestion-button-text">Get Treatment</span>
+                </button>
+
+                <div id="suggestionBox" class="suggestion-box" style="display: none;">
+                    <div class="suggestion-title">Farmer Treatments</div>
+                    <div id="suggestionContent"></div>
+
+                    <div class="action-buttons">
+                        <button id="chatButton" class="chat-button">
+                            <i class="fas fa-users" style="color: #fff; font-size: 20px;"></i>
+                            <span class="action-button-text">Chat with Expert</span>
+                        </button>
+                    </div>
+                </div>
+
+                <button id="medicinesButton" class="medicines-button" style="display: none;">
+                    <i class="fas fa-medkit" style="color: #fff; font-size: 20px;"></i>
+                    <span class="medicines-button-text">Related Medicines</span>
+                </button>
+
+                <button id="resetButton" class="reset-button">
+                    <span class="reset-button-text">Start New Analysis</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Medicines Modal -->
+    <div id="medicinesModal" class="medicines-modal">
+        <div class="medicines-modal-header">
+            <button class="close-medicines-button" id="closeMedicinesButton">
+                <i class="fas fa-arrow-left" style="font-size: 24px;"></i>
+            </button>
+            <div class="medicines-modal-title">Related Medicines</div>
+            <div></div>
+        </div>
+        
+        <div class="medicines-modal-content">
+            <div id="medicinesLoadingContainer" class="medicines-loading-container" style="display: none;">
+                <div class="spinner"></div>
+                <span class="medicines-loading-text">Loading medicines...</span>
+                <div class="progress-container">
+                    <div class="progress-bar">
+                        <div id="medicinesProgressFill" class="progress-fill"></div>
+                    </div>
+                    <div class="progress-text">Fetching... <span id="medicinesProgressPercent">0</span>%</div>
+                </div>
+            </div>
+            
+            <div id="medicinesList" class="medicines-list">
+                <!-- Medicine items will be dynamically added here -->
+            </div>
+            
+            <div id="medicinesEmptyContainer" class="medicines-empty-container" style="display: none;">
+                <span class="medicines-empty-text">No medicines found</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Modal -->
+    <div id="errorModal" class="error-modal">
+        <div class="error-modal-content">
+            <div class="error-modal-header">
+                <span class="error-modal-emoji" id="errorModalEmoji">👎</span>
+                <div class="error-modal-title" id="errorModalTitle">Error</div>
+            </div>
+            <div class="error-modal-message" id="errorModalMessage"></div>
+            <button class="error-modal-button" id="errorModalButton">
+                <span class="error-modal-button-text">OK</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // API keys
+        const GEMINI_API_KEY = "AIzaSyAc_g9Oek-wavaFWDeyncuD-PywXS-GI90";
+        const OPENWEATHER_KEY = "e616641ff2bafc2ab87c58aad11d3f6e";
+
+        // Endpoints
+        const API_ENDPOINTS = {
+            GEMINI: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
+            DISEASE_PREDICT: "https://agri-disease-api.onrender.com/predict",
+            MEDICINE_SEARCH: "https://plant-ai-finder-med.onrender.com/search",
+        };
+
+        // Crop types that the model was trained on
+        const CROP_TYPES = [
+            { id: 'apple', name: 'Apple', icon: '🍎' },
+            { id: 'blueberry', name: 'Blueberry', icon: '🫐' },
+            { id: 'cherry', name: 'Cherry (including sour)', icon: '🍒' },
+            { id: 'corn', name: 'Corn (maize)', icon: '🌽' },
+            { id: 'grape', name: 'Grape', icon: '🍇' },
+            { id: 'orange', name: 'Orange', icon: '🍊' },
+            { id: 'peach', name: 'Peach', icon: '🍑' },
+            { id: 'pepper', name: 'Pepper_bell', icon: '🫑' },
+            { id: 'potato', name: 'Potato', icon: '🥔' },
+            { id: 'raspberry', name: 'Raspberry', icon: '🫐' },
+            { id: 'soybean', name: 'Soybean', icon: '🌱' },
+            { id: 'squash', name: 'Squash', icon: '🎃' },
+            { id: 'strawberry', name: 'Strawberry', icon: '🍓' },
+            { id: 'tomato', name: 'Tomato', icon: '🍅' }
+        ];
+
+        // Global state
+        let currentStep = 'crop-selection'; // 'crop-selection' or 'prediction'
+        let selectedCrop = null;
+        let selectedImage = null;
+        let prediction = null;
+        let suggestion = null;
+        let weather = null;
+        let loading = false;
+        let loadingProgress = 0;
+        let isNotLeaf = false;
+        let predictionError = null;
+        let medicines = [];
+        let medicinesLoading = false;
+
+        // DOM elements
+        const cropSelectionScreen = document.getElementById('cropSelectionScreen');
+        const predictionScreen = document.getElementById('predictionScreen');
+        const cropList = document.getElementById('cropList');
+        const continueButton = document.getElementById('continueButton');
+        const selectedCropName = document.getElementById('selectedCropName');
+        const selectedCropIcon = document.getElementById('selectedCropIcon');
+        const selectedCropNameDisplay = document.getElementById('selectedCropNameDisplay');
+        const changeCropButton = document.getElementById('changeCropButton');
+        const galleryButton = document.getElementById('galleryButton');
+        const cameraButton = document.getElementById('cameraButton');
+        const fileInput = document.getElementById('fileInput');
+        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        const imagePreview = document.getElementById('imagePreview');
+        const changeImageButton = document.getElementById('changeImageButton');
+        const predictButton = document.getElementById('predictButton');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const progressPercent = document.getElementById('progressPercent');
+        const notLeafMessage = document.getElementById('notLeafMessage');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const resultsSection = document.getElementById('resultsSection');
+        const resultCrop = document.getElementById('resultCrop');
+        const resultDisease = document.getElementById('resultDisease');
+        const resultImage = document.getElementById('resultImage');
+        const weatherBox = document.getElementById('weatherBox');
+        const weatherInfo = document.getElementById('weatherInfo');
+        const suggestionButton = document.getElementById('suggestionButton');
+        const suggestionBox = document.getElementById('suggestionBox');
+        const suggestionContent = document.getElementById('suggestionContent');
+        const chatButton = document.getElementById('chatButton');
+        const medicinesButton = document.getElementById('medicinesButton');
+        const resetButton = document.getElementById('resetButton');
+        const medicinesModal = document.getElementById('medicinesModal');
+        const closeMedicinesButton = document.getElementById('closeMedicinesButton');
+        const medicinesLoadingContainer = document.getElementById('medicinesLoadingContainer');
+        const medicinesProgressFill = document.getElementById('medicinesProgressFill');
+        const medicinesProgressPercent = document.getElementById('medicinesProgressPercent');
+        const medicinesList = document.getElementById('medicinesList');
+        const medicinesEmptyContainer = document.getElementById('medicinesEmptyContainer');
+        const errorModal = document.getElementById('errorModal');
+        const errorModalEmoji = document.getElementById('errorModalEmoji');
+        const errorModalTitle = document.getElementById('errorModalTitle');
+        const errorModalMessage = document.getElementById('errorModalMessage');
+        const errorModalButton = document.getElementById('errorModalButton');
+        const backButton = document.getElementById('backButton');
+        const backButtonPrediction = document.getElementById('backButtonPrediction');
+
+        // Initialize the app
+        function init() {
+            renderCropList();
+            setupEventListeners();
+        }
+
+        // Render crop list
+        function renderCropList() {
+            cropList.innerHTML = '';
+            CROP_TYPES.forEach(crop => {
+                const cropItem = document.createElement('div');
+                cropItem.className = 'crop-item';
+                cropItem.dataset.cropId = crop.id;
+                
+                const cropIcon = document.createElement('div');
+                cropIcon.className = 'crop-icon';
+                cropIcon.textContent = crop.icon;
+                
+                const cropName = document.createElement('div');
+                cropName.className = 'crop-name';
+                cropName.textContent = crop.name;
+                
+                cropItem.appendChild(cropIcon);
+                cropItem.appendChild(cropName);
+                
+                cropItem.addEventListener('click', () => handleCropSelect(crop));
+                
+                cropList.appendChild(cropItem);
+            });
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            continueButton.addEventListener('click', handleContinue);
+            changeCropButton.addEventListener('click', handleBackToCropSelection);
+            galleryButton.addEventListener('click', () => fileInput.click());
+            cameraButton.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', handleFileSelect);
+            changeImageButton.addEventListener('click', () => {
+                selectedImage = null;
+                imagePreviewContainer.style.display = 'none';
+                predictButton.style.display = 'none';
+                resetResults();
+            });
+            predictButton.addEventListener('click', uploadImage);
+            suggestionButton.addEventListener('click', onGetSuggestionPressed);
+            chatButton.addEventListener('click', navigateToChat);
+            medicinesButton.addEventListener('click', () => fetchMedicinesByDisease(prediction));
+            resetButton.addEventListener('click', resetResults);
+            closeMedicinesButton.addEventListener('click', () => {
+                medicinesModal.style.display = 'none';
+            });
+            errorModalButton.addEventListener('click', () => {
+                errorModal.style.display = 'none';
+            });
+            backButton.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+            backButtonPrediction.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Crop selection handlers
+        function handleCropSelect(crop) {
+            // Remove previous selection
+            document.querySelectorAll('.crop-item').forEach(item => {
+                item.classList.remove('selected-crop-item');
+            });
+            
+            // Add selection to clicked crop
+            const selectedItem = document.querySelector(`[data-crop-id="${crop.id}"]`);
+            selectedItem.classList.add('selected-crop-item');
+            
+            selectedCrop = crop;
+            continueButton.disabled = false;
+        }
+
+        function handleContinue() {
+            if (selectedCrop) {
+                currentStep = 'prediction';
+                cropSelectionScreen.style.display = 'none';
+                predictionScreen.style.display = 'flex';
+                
+                // Update selected crop display
+                selectedCropName.textContent = selectedCrop.name;
+                selectedCropIcon.textContent = selectedCrop.icon;
+                selectedCropNameDisplay.textContent = selectedCrop.name;
+            } else {
+                showErrorModal("Selection Required", "Please select a crop type to continue.");
+            }
+        }
+
+        function handleBackToCropSelection() {
+            currentStep = 'crop-selection';
+            cropSelectionScreen.style.display = 'flex';
+            predictionScreen.style.display = 'none';
+            resetResults();
+        }
+
+        // Image selection handlers
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    selectedImage = {
+                        uri: e.target.result,
+                        base64: e.target.result.split(',')[1], // Remove data:image/jpeg;base64, prefix
+                        name: file.name
+                    };
+                    
+                    imagePreview.src = selectedImage.uri;
+                    imagePreviewContainer.style.display = 'flex';
+                    predictButton.style.display = 'block';
+                    predictButton.disabled = false;
+                    
+                    // Reset error states
+                    isNotLeaf = false;
+                    predictionError = null;
+                    notLeafMessage.style.display = 'none';
+                    errorMessage.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Show error modal with custom message
+        function showErrorModal(title, message, success = false) {
+            errorModalTitle.textContent = title;
+            errorModalMessage.textContent = message;
+            errorModalEmoji.textContent = success ? "👍" : "👎";
+            errorModal.style.display = 'flex';
+        }
+
+        // Simulate loading progress
+        function simulateLoadingProgress(elementId, percentId) {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 2;
+                if (progress > 90) {
+                    clearInterval(interval);
+                    return;
+                }
+                document.getElementById(elementId).style.width = `${progress}%`;
+                document.getElementById(percentId).textContent = progress;
+            }, 100);
+            return interval;
+        }
+
+        // Reset results
+        function resetResults() {
+            prediction = null;
+            suggestion = null;
+            weather = null;
+            selectedImage = null;
+            imagePreviewContainer.style.display = 'none';
+            predictButton.style.display = 'none';
+            resultsSection.style.display = 'none';
+            isNotLeaf = false;
+            predictionError = null;
+            medicines = [];
+            medicinesList.innerHTML = '';
+        }
+
+        // Check if image is a leaf
+        async function checkIfLeaf(base64Image) {
+            try {
+                console.log("Checking if image is a leaf...");
+                const prompt = `You are a plant expert. Analyze this image and determine if it shows a plant leaf.
+
+Focus on these characteristics:
+- Green coloration (various shades typical of leaves)
+- Flat, thin structure with visible veins
+- Typical leaf shapes (oval, lanceolate, cordate, etc.)
+- Smooth or slightly textured surface
+- Smooth or serrated edges
+
+Respond with ONLY "LEAF" if it's clearly a plant leaf, or "NOT_LEAF" if it's not.
+If you're unsure or confidence is low, respond with "NOT_LEAF".`;
+
+                const body = {
+                    contents: [
+                        {
+                            parts: [
+                                { text: prompt },
+                                { inlineData: { mimeType: "image/jpeg", data: base64Image } },
+                            ],
+                        },
+                    ],
+                };
+
+                const res = await fetch(API_ENDPOINTS.GEMINI, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                
+                const json = await res.json();
+                const responseText = json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase();
+                console.log("Leaf check response:", responseText);
+                
+                return responseText === "LEAF";
+            } catch (err) {
+                console.warn("Leaf check failed:", err);
+                return false;
+            }
+        }
+
+        // Fetch weather data
+        async function fetchWeather() {
+            try {
+                if (!navigator.geolocation) {
+                    return null;
+                }
+                
+                return new Promise((resolve) => {
+                    navigator.geolocation.getCurrentPosition(
+                        async (position) => {
+                            const { latitude, longitude } = position.coords;
+                            const url = `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${OPENWEATHER_KEY}&units=metric`;
+                            const res = await fetch(url);
+                            const data = await res.json();
+                            if (!res.ok) throw new Error(data.message || "Weather API error");
+                            resolve({
+                                temp: data.main.temp,
+                                humidity: data.main.humidity,
+                                condition: data.weather?.[0]?.description || "",
+                                location: data.name || "",
+                            });
+                        },
+                        (error) => {
+                            console.warn("Geolocation error:", error);
+                            resolve(null);
+                        }
+                    );
+                });
+            } catch (err) {
+                console.warn("Weather fetch failed:", err);
+                return null;
+            }
+        }
+
+        // Predict disease
+        async function predictDisease(file) {
+            try {
+                const formData = new FormData();
+                
+                // Convert base64 to blob for FormData
+                const byteCharacters = atob(file.base64);
+                const byteNumbers = new Array(byteCharacters.length);
+                for (let i = 0; i < byteCharacters.length; i++) {
+                    byteNumbers[i] = byteCharacters.charCodeAt(i);
+                }
+                const byteArray = new Uint8Array(byteNumbers);
+                const blob = new Blob([byteArray], { type: 'image/jpeg' });
+                
+                formData.append("file", blob, file.name);
+                
+                console.log("Sending request to disease prediction API...");
+                const res = await fetch(API_ENDPOINTS.DISEASE_PREDICT, {
+                    method: "POST",
+                    body: formData,
+                });
+                
+                console.log("Response status:", res.status);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error("API Error Response:", errorText);
+                    throw new Error(`API Error (${res.status}): ${errorText || "Unknown error"}`);
+                }
+                
+                const data = await res.json();
+                console.log("API Response Data:", data);
+                return data;
+            } catch (err) {
+                console.error("Disease prediction error:", err);
+                throw err;
+            }
+        }
+
+        // Validate prediction
+        function validatePrediction(prediction, confidence) {
+            // Check if confidence is less than 70%
+            if (parseFloat(confidence) < 70) {
+                return {
+                    isValid: false,
+                    error: "Low confidence",
+                    message: "We're not confident enough to identify disease. Please try again with a clearer image."
+                };
+            }
+
+            // Extract crop name from prediction
+            const predictionLower = prediction.toLowerCase();
+            const selectedCropId = selectedCrop.id;
+            const selectedCropName = selectedCrop.name.toLowerCase();
+            
+            // Check if the selected crop ID is in the prediction string
+            const containsCropId = predictionLower.includes(selectedCropId);
+            
+            // Also check if the crop name is in the prediction
+            const containsCropName = predictionLower.includes(selectedCropName);
+            
+            // If neither the crop ID nor the crop name is found, it's a mismatch
+            if (!containsCropId && !containsCropName) {
+                return {
+                    isValid: false,
+                    error: "Crop mismatch",
+                    message: `The detected disease doesn't match the selected crop (${selectedCrop.name}). Please select the correct crop type or try again with a different image.`
+                };
+            }
+
+            return { isValid: true };
+        }
+
+        // Upload image for prediction
+        async function uploadImage() {
+            if (!selectedImage) {
+                showErrorModal("No Image", "Please select or capture an image first.");
+                return;
+            }
+            
+            loading = true;
+            isNotLeaf = false;
+            predictionError = null;
+            predictButton.disabled = true;
+            loadingContainer.style.display = 'flex';
+            progressContainer.style.display = 'block';
+            
+            const progressInterval = simulateLoadingProgress('progressFill', 'progressPercent');
+            
+            try {
+                console.log("Starting image upload process...");
+                
+                const isLeaf = await checkIfLeaf(selectedImage.base64);
+                console.log("Leaf check result:", isLeaf);
+                
+                if (!isLeaf) {
+                    console.log("Image is not a leaf, showing message...");
+                    clearInterval(progressInterval);
+                    progressFill.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    loadingContainer.style.display = 'none';
+                    progressContainer.style.display = 'none';
+                    predictButton.disabled = false;
+                    isNotLeaf = true;
+                    notLeafMessage.style.display = 'flex';
+                    
+                    showErrorModal(
+                        "Invalid Image", 
+                        "This doesn't appear to be a plant leaf. Please upload a valid crop leaf image."
+                    );
+                    return;
+                }
+
+                console.log("Image is a leaf, proceeding with disease prediction...");
+                
+                const weatherData = await fetchWeather();
+                setWeather(weatherData);
+
+                const data = await predictDisease(selectedImage);
+
+                if (data && (data.prediction || data.disease)) {
+                    const diseaseName = data.prediction || data.disease;
+                    const confidenceValue = data.confidence || 0;
+                    
+                    // Validate the prediction
+                    const validation = validatePrediction(diseaseName, confidenceValue);
+                    
+                    if (!validation.isValid) {
+                        predictionError = validation;
+                        clearInterval(progressInterval);
+                        progressFill.style.width = '100%';
+                        progressPercent.textContent = '100%';
+                        loadingContainer.style.display = 'none';
+                        progressContainer.style.display = 'none';
+                        predictButton.disabled = false;
+                        errorMessage.style.display = 'flex';
+                        errorText.textContent = validation.message;
+                        
+                        showErrorModal(
+                            validation.error,
+                            validation.message
+                        );
+                        return;
+                    }
+                    
+                    prediction = diseaseName;
+                    clearInterval(progressInterval);
+                    progressFill.style.width = '100%';
+                    progressPercent.textContent = '100%';
+                    loadingContainer.style.display = 'none';
+                    progressContainer.style.display = 'none';
+                    predictButton.disabled = false;
+                    
+                    // Show results
+                    resultCrop.textContent = selectedCrop.name;
+                    resultDisease.textContent = prediction;
+                    resultImage.src = selectedImage.uri;
+                    resultsSection.style.display = 'block';
+                    suggestionButton.style.display = 'block';
+                    medicinesButton.style.display = 'block';
+                    
+                    // Update suggestion button text based on prediction
+                    if (String(prediction || "").toLowerCase().includes("healthy")) {
+                        suggestionButton.querySelector('.suggestion-button-text').textContent = "Get Precautions";
+                    } else {
+                        suggestionButton.querySelector('.suggestion-button-text').textContent = "Get Treatment";
+                    }
+                    
+                    showErrorModal("Success", "Prediction ready. Tap 'Get Suggestion' for guidance.", true);
+                } else {
+                    console.error("Invalid prediction data:", data);
+                    throw new Error("Invalid prediction data received from server");
+                }
+            } catch (err) {
+                console.error("Upload error:", err);
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+                loadingContainer.style.display = 'none';
+                progressContainer.style.display = 'none';
+                predictButton.disabled = false;
+                errorMessage.style.display = 'flex';
+                errorText.textContent = err.message || "Something went wrong during prediction.";
+                
+                showErrorModal("Error", err.message || "Something went wrong during prediction.");
+            } finally {
+                loading = false;
+            }
+        }
+
+        // Set weather data
+        function setWeather(data) {
+            weather = data;
+            if (weather) {
+                weatherInfo.innerHTML = `
+                    <div>Location: ${weather.location || "Unknown"}</div>
+                    <div>Temp: ${weather.temp ?? "N/A"}°C</div>
+                    <div>Humidity: ${weather.humidity ?? "N/A"}%</div>
+                    <div>Condition: ${weather.condition || "Unknown"}</div>
+                `;
+                weatherBox.style.display = 'block';
+            }
+        }
+
+        // Fetch suggestion from Gemini
+        async function fetchSuggestionFromGemini(diseaseName, weatherData) {
+            try {
+                const isHealthy = String(diseaseName || "").toLowerCase().includes("healthy");
+                
+                let prompt;
+                if (isHealthy) {
+                    prompt = weatherData
+                        ? `The crop is healthy. Current weather in ${weatherData.location}: ${weatherData.condition}, temperature ${weatherData.temp}°C, humidity ${weatherData.humidity}%. 
+                        
+                        Provide weather-based precautions in this specific format:
+                        • [Main precaution based on current weather]
+                        1. [First specific action]
+                        2. [Second specific action]
+                        3. [Third specific action]
+                        
+                        Keep it simple and easy to understand for farmers.`
+                        : `The crop is healthy. Provide general precautions in this specific format:
+                        • [Main general precaution]
+                        1. [First specific action]
+                        2. [Second specific action]
+                        3. [Third specific action]
+                        
+                        Keep it simple and easy to understand for farmers.`;
+                } else {
+                    prompt = `Detected disease: ${diseaseName}. Provide treatment recommendations in this specific format:
+                    • [Main treatment approach]
+                    1. [First specific treatment step]
+                    2. [Second specific treatment step]
+                    3. [Third specific treatment step]
+                    
+                    Keep it simple and easy to understand for farmers.`;
+                }
+
+                const body = { contents: [{ parts: [{ text: prompt }] }] };
+                const res = await fetch(API_ENDPOINTS.GEMINI, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+                const json = await res.json();
+                return (
+                    json?.candidates?.[0]?.content?.parts?.[0]?.text?.trim() ||
+                    "No suggestion available."
+                );
+            } catch (err) {
+                console.warn("Gemini suggestion error:", err);
+                return "Failed to fetch suggestion.";
+            }
+        }
+
+        // Parse suggestion text
+        function parseSuggestion(text) {
+            if (!text) return [];
+            
+            const lines = text.split('\n').filter(line => line.trim());
+            const result = [];
+            
+            lines.forEach(line => {
+                const trimmedLine = line.trim();
+                if (trimmedLine.startsWith('•')) {
+                    result.push({ type: 'bullet', text: trimmedLine.substring(1).trim() });
+                } else if (/^\d+\./.test(trimmedLine)) {
+                    result.push({ type: 'number', text: trimmedLine.replace(/^\d+\.\s*/, '') });
+                } else {
+                    result.push({ type: 'text', text: trimmedLine });
+                }
+            });
+            
+            return result;
+        }
+
+        // Get suggestion button handler
+        async function onGetSuggestionPressed() {
+            if (!prediction) return;
+            
+            loading = true;
+            suggestionButton.disabled = true;
+            loadingContainer.style.display = 'flex';
+            progressContainer.style.display = 'block';
+            
+            const progressInterval = simulateLoadingProgress('progressFill', 'progressPercent');
+            
+            try {
+                const aiText = await fetchSuggestionFromGemini(prediction, weather);
+                suggestion = aiText;
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+                loadingContainer.style.display = 'none';
+                progressContainer.style.display = 'none';
+                suggestionButton.disabled = false;
+                
+                // Display suggestion
+                suggestionBox.style.display = 'block';
+                suggestionContent.innerHTML = '';
+                
+                // Update suggestion title based on prediction
+                if (String(prediction || "").toLowerCase().includes("healthy")) {
+                    suggestionBox.querySelector('.suggestion-title').textContent = "Farmer Precautions";
+                } else {
+                    suggestionBox.querySelector('.suggestion-title').textContent = "Farmer Treatments";
+                }
+                
+                // Parse and display suggestion
+                const parsedSuggestion = parseSuggestion(suggestion);
+                parsedSuggestion.forEach((item, index) => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.className = 'suggestion-item';
+                    
+                    if (item.type === 'bullet') {
+                        const bulletItem = document.createElement('div');
+                        bulletItem.className = 'bullet-item';
+                        
+                        const bulletSymbol = document.createElement('div');
+                        bulletSymbol.className = 'bullet-symbol';
+                        bulletSymbol.textContent = '•';
+                        
+                        const bulletText = document.createElement('div');
+                        bulletText.className = 'bullet-text';
+                        bulletText.textContent = item.text;
+                        
+                        bulletItem.appendChild(bulletSymbol);
+                        bulletItem.appendChild(bulletText);
+                        suggestionItem.appendChild(bulletItem);
+                    } else if (item.type === 'number') {
+                        const numberItem = document.createElement('div');
+                        numberItem.className = 'number-item';
+                        
+                        const numberSymbol = document.createElement('div');
+                        numberSymbol.className = 'number-symbol';
+                        numberSymbol.textContent = index;
+                        
+                        const numberText = document.createElement('div');
+                        numberText.className = 'number-text';
+                        numberText.textContent = item.text;
+                        
+                        numberItem.appendChild(numberSymbol);
+                        numberItem.appendChild(numberText);
+                        suggestionItem.appendChild(numberItem);
+                    } else {
+                        const suggestionText = document.createElement('div');
+                        suggestionText.className = 'suggestion-text';
+                        suggestionText.textContent = item.text;
+                        suggestionItem.appendChild(suggestionText);
+                    }
+                    
+                    suggestionContent.appendChild(suggestionItem);
+                });
+                
+                showErrorModal("Suggestions Ready", "Guidance loaded successfully.", true);
+            } catch (err) {
+                console.error("Suggestion error:", err);
+                clearInterval(progressInterval);
+                progressFill.style.width = '100%';
+                progressPercent.textContent = '100%';
+                loadingContainer.style.display = 'none';
+                progressContainer.style.display = 'none';
+                suggestionButton.disabled = false;
+                
+                showErrorModal("Error", "Failed to fetch suggestions.");
+            } finally {
+                loading = false;
+            }
+        }
+
+        // Navigate to chat.html with data
+        function navigateToChat() {
+            if (!prediction || !selectedCrop) {
+                showErrorModal("Missing Data", "Please complete the disease detection first.");
+                return;
+            }
+
+            // Store data in sessionStorage to pass to chat.html
+            const chatData = {
+                cropName: selectedCrop.name,
+                diseaseName: prediction,
+                weatherInfo: weather ? {
+                    condition: weather.condition,
+                    temp: weather.temp,
+                    location: weather.location
+                } : null
+            };
+            
+            sessionStorage.setItem('chatData', JSON.stringify(chatData));
+            
+            // Navigate to chat.html
+            window.location.href = 'chat.html';
+        }
+
+        // Fetch medicines by disease
+        async function fetchMedicinesByDisease(diseaseName) {
+            if (!diseaseName) return;
+            
+            medicinesLoading = true;
+            medicinesButton.disabled = true;
+            medicinesModal.style.display = 'block';
+            medicinesLoadingContainer.style.display = 'flex';
+            medicinesList.style.display = 'none';
+            medicinesEmptyContainer.style.display = 'none';
+            
+            const progressInterval = simulateLoadingProgress('medicinesProgressFill', 'medicinesProgressPercent');
+            
+            try {
+                // Extract disease name without crop prefix
+                const parts = diseaseName.split('___');
+                let cleanDiseaseName = '';
+                
+                if (parts.length > 1) {
+                    cleanDiseaseName = parts[1].replace(/_/g, " ");
+                } else {
+                    cleanDiseaseName = diseaseName.replace(/^[^_]+___/, "").replace(/_/g, " ");
+                }
+                
+                console.log("Original disease name:", diseaseName);
+                console.log("Cleaned disease name:", cleanDiseaseName);
+                
+                const response = await fetch(`${API_ENDPOINTS.MEDICINE_SEARCH}?query=${encodeURIComponent(cleanDiseaseName)}`);
+                const data = await response.json();
+                
+                console.log("Medicines API response:", data);
+                
+                if (data.results && data.results.length > 0) {
+                    medicines = data.results;
+                    renderMedicines();
+                } else {
+                    // Try with just the first word of the disease name
+                    const firstWord = cleanDiseaseName.split(' ')[0];
+                    console.log("Trying with first word:", firstWord);
+                    
+                    const fallbackResponse = await fetch(`${API_ENDPOINTS.MEDICINE_SEARCH}?query=${encodeURIComponent(firstWord)}`);
+                    const fallbackData = await fallbackResponse.json();
+                    
+                    if (fallbackData.results && fallbackData.results.length > 0) {
+                        medicines = fallbackData.results;
+                        renderMedicines();
+                    } else {
+                        medicinesLoadingContainer.style.display = 'none';
+                        medicinesEmptyContainer.style.display = 'flex';
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching medicines:", error);
+                medicinesLoadingContainer.style.display = 'none';
+                medicinesEmptyContainer.style.display = 'flex';
+                showErrorModal("Error", "Failed to fetch medicines. Please try again.");
+            } finally {
+                clearInterval(progressInterval);
+                medicinesLoading = false;
+                medicinesButton.disabled = false;
+            }
+        }
+
+        // Render medicines
+        function renderMedicines() {
+            medicinesLoadingContainer.style.display = 'none';
+            medicinesList.style.display = 'flex';
+            medicinesList.innerHTML = '';
+            
+            medicines.forEach(medicine => {
+                const medicineCard = document.createElement('div');
+                medicineCard.className = 'medicine-card';
+                
+                const medicineContent = document.createElement('div');
+                medicineContent.className = 'medicine-content';
+                
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'image-container';
+                
+                const medicineImage = document.createElement('img');
+                medicineImage.className = 'medicine-image';
+                medicineImage.src = medicine.image;
+                medicineImage.alt = medicine.title;
+                
+                imageContainer.appendChild(medicineImage);
+                
+                const medicineInfo = document.createElement('div');
+                medicineInfo.className = 'medicine-info';
+                
+                const medicineTitle = document.createElement('div');
+                medicineTitle.className = 'medicine-title';
+                medicineTitle.textContent = medicine.title;
+                
+                const medicineSubtitle = document.createElement('div');
+                medicineSubtitle.className = 'medicine-subtitle';
+                medicineSubtitle.textContent = medicine.subtitle;
+                
+                const ratingContainer = document.createElement('div');
+                ratingContainer.className = 'rating-container';
+                
+                const ratingText = document.createElement('span');
+                ratingText.className = 'rating-text';
+                ratingText.textContent = `⭐ ${medicine.rating}`;
+                
+                const reviewsText = document.createElement('span');
+                reviewsText.className = 'reviews-text';
+                reviewsText.textContent = `(${medicine.reviews} reviews)`;
+                
+                ratingContainer.appendChild(ratingText);
+                ratingContainer.appendChild(reviewsText);
+                
+                const medicineDescription = document.createElement('div');
+                medicineDescription.className = 'medicine-description';
+                medicineDescription.textContent = medicine.description;
+                
+                const buyButton = document.createElement('button');
+                buyButton.className = 'buy-button';
+                buyButton.textContent = 'Buy Now';
+                buyButton.addEventListener('click', () => {
+                    if (medicine.storeUrl) {
+                        window.open(medicine.storeUrl, '_blank');
+                    } else {
+                        showErrorModal("Error", "Store link not available");
+                    }
+                });
+                
+                medicineInfo.appendChild(medicineTitle);
+                medicineInfo.appendChild(medicineSubtitle);
+                medicineInfo.appendChild(ratingContainer);
+                medicineInfo.appendChild(medicineDescription);
+                medicineInfo.appendChild(buyButton);
+                
+                medicineContent.appendChild(imageContainer);
+                medicineContent.appendChild(medicineInfo);
+                
+                medicineCard.appendChild(medicineContent);
+                medicinesList.appendChild(medicineCard);
+            });
+        }
+
+        // Initialize the app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

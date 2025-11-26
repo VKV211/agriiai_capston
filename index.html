@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Farmer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+        
+        body {
+            background-color: #F9FAFB;
+            color: #333;
+        }
+        
+        .container {
+            display: flex;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .header {
+            background-color: #10ae4aff;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 100%;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .header-logo {
+            font-size: 22px;
+            font-weight: bold;
+            color: #fff;
+            margin-right: 15px;
+        }
+        
+        .header-hamburger {
+            padding: 5px;
+            background-color: rgba(255, 255, 255, 0.2);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .header-hamburger:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .header-hamburger i {
+            color: #fff;
+            font-size: 24px;
+        }
+        
+        .user-container {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+        }
+        
+        .user-container i {
+            color: #fff;
+            font-size: 24px;
+        }
+        
+        .username {
+            font-size: 16px;
+            color: #fff;
+            margin-left: 6px;
+            font-weight: 500;
+        }
+        
+        .sidebar {
+            background-color: #10ae4aff;
+            box-shadow: 2px 0 4px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            width: 250px;
+            padding: 20px 15px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+        }
+        
+        .sidebar-content {
+            display: flex;
+            flex-direction: column;
+            height: calc(100% - 40px);
+        }
+        
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+        
+        .nav-button {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            border-radius: 6px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            text-decoration: none;
+        }
+        
+        .nav-button:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        
+        .nav-button.active {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-button i {
+            color: #fff;
+            font-size: 20px;
+        }
+        
+        .nav-button-text {
+            font-size: 16px;
+            color: #fff;
+            font-weight: 500;
+            margin-left: 10px;
+        }
+        
+        .nav-button.active .nav-button-text {
+            font-weight: bold;
+        }
+        
+        .logout-button {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255, 255, 255, 0.2);
+            padding: 10px 12px;
+            border-radius: 6px;
+            margin-top: auto;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .logout-button:hover {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .logout-button i {
+            color: #fff;
+            font-size: 20px;
+        }
+        
+        .logout-text {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            margin-left: 10px;
+        }
+        
+        .main-content-wrapper {
+            flex: 1;
+            margin-left: 250px;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .prediction-container {
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .prediction-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #10ae4aff;
+            margin-bottom: 20px;
+        }
+        
+        .prediction-description {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+        
+        .prediction-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #ff5722;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+            text-decoration: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .prediction-button:hover {
+            background-color: #e64a19;
+            transform: translateY(-2px);
+        }
+        
+        .prediction-button i {
+            color: #fff;
+            font-size: 24px;
+            margin-right: 10px;
+        }
+        
+        .prediction-button-text {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+        }
+        
+        .feature-cards {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 50px;
+            width: 100%;
+        }
+        
+        .feature-card {
+            background-color: white;
+            border-radius: 8px;
+            padding: 20px;
+            width: 280px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 36px;
+            color: #10ae4aff;
+            margin-bottom: 15px;
+        }
+        
+        .feature-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .feature-description {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.active {
+                transform: translateX(0);
+            }
+            
+            .main-content-wrapper {
+                margin-left: 0;
+            }
+            
+            .header-hamburger {
+                display: block;
+            }
+        }
+        
+        /* Desktop adjustments */
+        @media (min-width: 769px) {
+            .header-hamburger {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <div class="nav-buttons">
+                    <a href="predict.html" class="nav-button active">
+                        <i class="fas fa-home"></i>
+                        <span class="nav-button-text">Predict</span>
+                    </a>
+                    
+                    <a href="chat.html" class="nav-button">
+                        <i class="fas fa-comments"></i>
+                        <span class="nav-button-text">Chat</span>
+                    </a>
+                    
+                    <a href="ms.html" class="nav-button">
+                        <i class="fas fa-cloud"></i>
+                        <span class="nav-button-text">Treatment</span>
+                    </a>
+                </div>
+                
+                <div class="logout-button" id="logoutButton">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span class="logout-text">Logout</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main Content Wrapper -->
+        <div class="main-content-wrapper">
+            <!-- Header with User Info -->
+            <div class="header">
+                <div class="header-left">
+                    <div class="header-logo">🌱 Smart Farmer</div>
+                    <div class="header-hamburger" id="hamburgerButton">
+                        <i class="fas fa-bars"></i>
+                    </div>
+                </div>
+                
+                <div class="user-container">
+                    <i class="fas fa-user-circle"></i>
+                    <span class="username" id="username">Loading...</span>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="main-content">
+                <div class="prediction-container">
+                    <h1 class="prediction-title">Crop Disease Prediction</h1>
+                    <p class="prediction-description">
+                        Get instant predictions for crop diseases using our advanced AI technology. 
+                        Upload images of your crops or describe symptoms to receive accurate diagnosis 
+                        and treatment recommendations.
+                    </p>
+                    
+                    <a href="predict.html" class="prediction-button">
+                        <i class="fas fa-seedling"></i>
+                        <span class="prediction-button-text">Ready for Prediction</span>
+                    </a>
+                </div>
+                
+                <div class="feature-cards">
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-camera"></i>
+                        </div>
+                        <h3 class="feature-title">Image Analysis</h3>
+                        <p class="feature-description">
+                            Upload photos of your crops for instant disease detection using our advanced image recognition technology.
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-stethoscope"></i>
+                        </div>
+                        <h3 class="feature-title">Symptom Checker</h3>
+                        <p class="feature-description">
+                            Describe symptoms you're observing to get potential disease diagnoses and treatment recommendations.
+                        </p>
+                    </div>
+                    
+                    <div class="feature-card">
+                        <div class="feature-icon">
+                            <i class="fas fa-pills"></i>
+                        </div>
+                        <h3 class="feature-title">Treatment Solutions</h3>
+                        <p class="feature-description">
+                            Receive tailored treatment plans for identified crop diseases to protect your harvest and maximize yield.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    
+    <script>
+        // Initialize Supabase client directly
+        const SUPABASE_URL = "https://mrjsyohjxglscrfgmnvb.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yanN5b2hqeGdsc2NyZmdtbnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3OTcxMTYsImV4cCI6MjA3NDM3MzExNn0.LmjYpHoTWI1DbaFAdTsxR1syeSFLaXpxd_oqgN-lofI";
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // DOM Elements
+            const sidebar = document.getElementById('sidebar');
+            const hamburgerButton = document.getElementById('hamburgerButton');
+            const logoutButton = document.getElementById('logoutButton');
+            const usernameElement = document.getElementById('username');
+            
+            // Toggle sidebar for mobile
+            function toggleSidebar() {
+                sidebar.classList.toggle('active');
+            }
+            
+            hamburgerButton.addEventListener('click', toggleSidebar);
+            
+            // Get current user from Supabase
+            async function getCurrentUser() {
+                try {
+                    const { data: { user }, error } = await supabaseClient.auth.getUser();
+                    
+                    if (error) {
+                        console.error('Error getting user:', error.message);
+                        usernameElement.textContent = 'User';
+                        return;
+                    }
+                    
+                    if (user) {
+                        // Extract username from email (everything before @)
+                        const email = user.email || '';
+                        const username = email.split('@')[0] || 'User';
+                        usernameElement.textContent = username;
+                        
+                        // Try to get user profile data from database
+                        try {
+                            // Check if the profiles table exists and has the right structure
+                            const { data: profile, error: profileError } = await supabaseClient
+                                .from('profiles')
+                                .select('username, full_name')
+                                .eq('id', user.id)
+                                .maybeSingle(); // Using maybeSingle instead of single to avoid errors if no profile exists
+                            
+                            if (profileError) {
+                                console.log('Profile query error:', profileError.message);
+                                // Keep using the email username
+                            } else if (profile) {
+                                // Use the username from profile if available
+                                usernameElement.textContent = profile.username || profile.full_name || username;
+                            }
+                        } catch (profileErr) {
+                            console.log('Profile not found, using email username');
+                        }
+                    } else {
+                        // If no user, redirect to login page
+                        window.location.href = 'start.html';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    usernameElement.textContent = 'User';
+                }
+            }
+            
+            // Handle logout
+            async function handleLogout() {
+                try {
+                    const { error } = await supabaseClient.auth.signOut();
+                    
+                    if (error) {
+                        console.error('Error logging out:', error.message);
+                        alert('Logout failed: ' + error.message);
+                    } else {
+                        // Redirect to login page after successful logout
+                        window.location.href = 'start.html';
+                    }
+                } catch (error) {
+                    console.error('Error:', error);
+                    alert('An error occurred during logout');
+                }
+            }
+            
+            logoutButton.addEventListener('click', handleLogout);
+            
+            // Get current user on page load
+            getCurrentUser();
+            
+            // Listen for auth state changes
+            supabaseClient.auth.onAuthStateChange((event, session) => {
+                if (event === 'SIGNED_IN' && session) {
+                    const email = session.user.email || '';
+                    const username = email.split('@')[0] || 'User';
+                    usernameElement.textContent = username;
+                    
+                    // Try to get user profile data from database
+                    (async () => {
+                        try {
+                            const { data: profile, error: profileError } = await supabaseClient
+                                .from('profiles')
+                                .select('username, full_name')
+                                .eq('id', session.user.id)
+                                .maybeSingle(); // Using maybeSingle instead of single
+                            
+                            if (profileError) {
+                                console.log('Profile query error:', profileError.message);
+                                // Keep using the email username
+                            } else if (profile) {
+                                // Use the username from profile if available
+                                usernameElement.textContent = profile.username || profile.full_name || username;
+                            }
+                        } catch (profileErr) {
+                            console.log('Profile not found, using email username');
+                        }
+                    })();
+                } else if (event === 'SIGNED_OUT') {
+                    window.location.href = 'start.html';
+                }
+            });
+        });
+    </script>
+</body>
+</html>

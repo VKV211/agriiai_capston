@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat with Expert</title>
+    <!-- Supabase JS SDK -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <style>
+        /* Basic Reset & Page Styling */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f2f2f2;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background-color: #007BFF;
+            color: white;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .back-button {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .expert-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .expert-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: #007BFF;
+            font-weight: bold;
+        }
+
+        .expert-name {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .expert-status {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        /* Message List Area */
+        .message-list {
+            flex-grow: 1;
+            padding: 15px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            background-color: #f9f9f9;
+        }
+
+        /* Date Separator */
+        .date-separator {
+            display: flex;
+            align-items: center;
+            margin: 10px 0;
+        }
+
+        .date-separator span {
+            background-color: #e0e0e0;
+            color: #555;
+            padding: 5px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        /* Message Bubble Styling */
+        .message-container {
+            max-width: 75%;
+            padding: 10px 15px;
+            border-radius: 18px;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .user-msg {
+            background-color: #007BFF;
+            color: white;
+            align-self: flex-end;
+            align-items: flex-end;
+            border-bottom-right-radius: 5px;
+        }
+
+        .expert-msg {
+            background-color: white;
+            color: #333;
+            align-self: flex-start;
+            align-items: flex-start;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+        }
+
+        .message-text {
+            font-size: 16px;
+            margin: 0;
+            word-wrap: break-word;
+        }
+
+        .timestamp {
+            font-size: 11px;
+            margin-top: 5px;
+            opacity: 0.7;
+        }
+
+        .user-msg .timestamp {
+            color: rgba(255,255,255,0.8);
+            align-self: flex-end;
+        }
+
+        .expert-msg .timestamp {
+            color: #888;
+            align-self: flex-start;
+        }
+
+        /* Loading Indicator */
+        .loading-indicator {
+            display: flex;
+            justify-content: center;
+            padding: 10px;
+        }
+
+        .loading-dots {
+            display: flex;
+            align-items: center;
+        }
+
+        .loading-dots span {
+            height: 8px;
+            width: 8px;
+            background-color: #888;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: bounce 1.4s infinite ease-in-out both;
+        }
+
+        .loading-dots span:nth-child(1) {
+            animation-delay: -0.32s;
+        }
+
+        .loading-dots span:nth-child(2) {
+            animation-delay: -0.16s;
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: scale(0);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background-color: white;
+            padding: 15px;
+            border-radius: 18px;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+            margin-bottom: 10px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        /* Input Area */
+        .input-container {
+            display: flex;
+            padding: 15px;
+            border-top: 1px solid #ddd;
+            background-color: white;
+            align-items: center;
+        }
+
+        .message-input {
+            flex: 1;
+            border: 1px solid #ddd;
+            border-radius: 25px;
+            padding: 12px 20px;
+            margin-right: 10px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .message-input:focus {
+            border-color: #007BFF;
+        }
+
+        .send-button {
+            background-color: #007BFF;
+            color: white;
+            font-weight: bold;
+            border: none;
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .send-button:hover {
+            background-color: #0056b3;
+        }
+
+        .send-button:disabled {
+            background-color: #a0cfff;
+            cursor: not-allowed;
+        }
+
+        /* Notification Toast */
+        .notification-toast {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0,0,0,0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            pointer-events: none;
+        }
+
+        .notification-toast.show {
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <!-- Header -->
+        <div class="header">
+            <a href="index.html" class="back-button">←</a>
+            <div class="expert-info">
+                <div class="expert-avatar">E</div>
+                <div>
+                    <div class="expert-name">Expert</div>
+                    <div class="expert-status">Online</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages will be rendered here -->
+        <div id="messageList" class="message-list">
+            <div class="loading-indicator" id="loadingIndicator">
+                <div class="loading-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Typing Indicator -->
+        <div id="typingIndicator" class="typing-indicator">
+            <div class="loading-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+
+        <!-- Message Input Area -->
+        <div class="input-container">
+            <input type="text" id="messageInput" class="message-input" placeholder="Type a message..." />
+            <button id="sendButton" class="send-button">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="notificationToast" class="notification-toast"></div>
+
+    <script>
+        // --- Supabase Configuration ---
+        const SUPABASE_URL = "https://mrjsyohjxglscrfgmnvb.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yanN5b2hqeGdsc2NyZmdtbnZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTg3OTcxMTYsImV4cCI6MjA3NDM3MzExNn0.LmjYpHoTWI1DbaFAdTsxR1syeSFLaXpxd_oqgN-lofI";
+        const { createClient } = supabase;
+        window.supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- Chat Logic ---
+        const expertId = "2b700556-7992-4001-9f00-3d5aaa84cd8f";
+        let userId = null;
+        let pollingInterval = null;
+        let lastMessageTime = null;
+        let messages = [];
+
+        // DOM Elements
+        const messageList = document.getElementById('messageList');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const typingIndicator = document.getElementById('typingIndicator');
+        const notificationToast = document.getElementById('notificationToast');
+
+        // Get logged-in user ID from Supabase
+        const fetchUser = async () => {
+            try {
+                const { data: { user }, error } = await supabase.auth.getUser();
+                if (error) {
+                    console.error("Error getting user:", error.message);
+                    showNotification("Please log in to continue");
+                    // Redirect to login page if user is not found
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 2000);
+                } else if (user) {
+                    userId = user.id;
+                    // Start fetching messages once we have the userId
+                    fetchMessages(true);
+                    startPolling();
+                }
+            } catch (err) {
+                console.error("An unexpected error occurred:", err);
+                showNotification("An error occurred. Please try again.");
+            }
+        };
+
+        // Fetch messages from the database
+        const fetchMessages = async (initialLoad = false) => {
+            if (!userId) return;
+
+            try {
+                let query = supabase
+                    .from("chats")
+                    .select("*")
+                    // Fixed the OR query syntax
+                    .or(`sender_id.eq.${userId},receiver_id.eq.${userId}`)
+                    .order("created_at", { ascending: true });
+
+                // If not initial load, only fetch messages newer than the last one we have
+                if (!initialLoad && lastMessageTime) {
+                    query = query.gt("created_at", lastMessageTime);
+                }
+
+                const { data, error } = await query;
+
+                if (error) {
+                    console.error("Error fetching messages:", error.message);
+                    showNotification("Failed to load messages");
+                } else {
+                    if (data.length > 0) {
+                        if (initialLoad) {
+                            messages = data;
+                            renderMessages();
+                            // Hide loading indicator after initial load
+                            loadingIndicator.style.display = 'none';
+                        } else {
+                            // Add new messages to our array
+                            messages = [...messages, ...data];
+                            renderNewMessages(data);
+                        }
+
+                        // Update the last message time
+                        const lastMsg = data[data.length - 1];
+                        lastMessageTime = lastMsg.created_at;
+                    }
+                }
+            } catch (err) {
+                console.error("An unexpected error occurred:", err);
+                showNotification("An error occurred while loading messages");
+            }
+        };
+
+        // Render all messages to the DOM
+        const renderMessages = () => {
+            // Clear existing messages
+            messageList.innerHTML = '';
+            
+            // Group messages by date
+            const groupedMessages = groupMessagesByDate(messages);
+            
+            // Render each date group
+            Object.keys(groupedMessages).forEach(date => {
+                // Add date separator
+                const dateSeparator = document.createElement('div');
+                dateSeparator.className = 'date-separator';
+                dateSeparator.innerHTML = `<span>${date}</span>`;
+                messageList.appendChild(dateSeparator);
+                
+                // Add messages for this date
+                groupedMessages[date].forEach(item => {
+                    const messageDiv = createMessageElement(item);
+                    messageList.appendChild(messageDiv);
+                });
+            });
+            
+            // Scroll to the bottom of the message list
+            messageList.scrollTop = messageList.scrollHeight;
+        };
+
+        // Render only new messages
+        const renderNewMessages = (newMessages) => {
+            newMessages.forEach(item => {
+                const messageDiv = createMessageElement(item);
+                messageList.appendChild(messageDiv);
+            });
+            
+            // Scroll to the bottom if new messages were added
+            if (newMessages.length > 0) {
+                messageList.scrollTop = messageList.scrollHeight;
+                
+                // Show typing indicator for a moment to simulate expert is reading
+                showTypingIndicator();
+            }
+        };
+
+        // Create a message element
+        const createMessageElement = (item) => {
+            const messageDiv = document.createElement('div');
+            const isExpert = item.sender_id === expertId;
+
+            messageDiv.classList.add('message-container');
+            messageDiv.classList.add(isExpert ? 'expert-msg' : 'user-msg');
+
+            const messageText = document.createElement('p');
+            messageText.classList.add('message-text');
+            messageText.textContent = item.message;
+
+            const timestamp = document.createElement('span');
+            timestamp.classList.add('timestamp');
+            timestamp.textContent = formatTime(item.created_at);
+
+            messageDiv.appendChild(messageText);
+            messageDiv.appendChild(timestamp);
+            
+            return messageDiv;
+        };
+
+        // Group messages by date
+        const groupMessagesByDate = (messages) => {
+            const grouped = {};
+            
+            messages.forEach(item => {
+                const date = formatDate(item.created_at);
+                if (!grouped[date]) {
+                    grouped[date] = [];
+                }
+                grouped[date].push(item);
+            });
+            
+            return grouped;
+        };
+
+        // Format date for display
+        const formatDate = (timestamp) => {
+            const date = new Date(timestamp);
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(yesterday.getDate() - 1);
+            
+            if (date.toDateString() === today.toDateString()) {
+                return "Today";
+            } else if (date.toDateString() === yesterday.toDateString()) {
+                return "Yesterday";
+            } else {
+                return date.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
+                });
+            }
+        };
+
+        // Format time for display
+        const formatTime = (timestamp) => {
+            const date = new Date(timestamp);
+            return date.toLocaleTimeString('en-US', { 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true
+            });
+        };
+
+        // Show typing indicator
+        const showTypingIndicator = () => {
+            typingIndicator.classList.add('active');
+            
+            // Hide after a random time between 1-3 seconds
+            const hideTime = 1000 + Math.random() * 2000;
+            setTimeout(() => {
+                typingIndicator.classList.remove('active');
+            }, hideTime);
+        };
+
+        // Show notification toast
+        const showNotification = (message) => {
+            notificationToast.textContent = message;
+            notificationToast.classList.add('show');
+            
+            setTimeout(() => {
+                notificationToast.classList.remove('show');
+            }, 3000);
+        };
+
+        // Start polling for new messages
+        const startPolling = () => {
+            if (pollingInterval) clearInterval(pollingInterval);
+            pollingInterval = setInterval(() => fetchMessages(), 3000);
+        };
+
+        // Send a new message
+        const sendMessage = async () => {
+            const messageText = messageInput.value.trim();
+            if (!messageText || !userId) return;
+
+            // Disable send button temporarily to prevent multiple sends
+            sendButton.disabled = true;
+            
+            // Create a temporary message object to show immediately
+            const tempMessage = {
+                id: 'temp-' + Date.now(),
+                sender_id: userId,
+                receiver_id: expertId,
+                message: messageText,
+                created_at: new Date().toISOString(),
+                pending: true
+            };
+            
+            // Add to messages array and render immediately
+            messages.push(tempMessage);
+            renderNewMessages([tempMessage]);
+            
+            // Clear input
+            messageInput.value = '';
+
+            try {
+                const { data, error } = await supabase.from("chats").insert([
+                    {
+                        sender_id: userId,
+                        receiver_id: expertId,
+                        message: messageText,
+                    },
+                ]);
+
+                if (error) {
+                    console.error("Error sending message:", error.message);
+                    showNotification("Failed to send message");
+                    
+                    // Remove the temporary message
+                    messages = messages.filter(m => m.id !== tempMessage.id);
+                    renderMessages();
+                } else {
+                    // Replace the temporary message with the real one
+                    if (data && data.length > 0) {
+                        messages = messages.map(m => 
+                            m.id === tempMessage.id ? data[0] : m
+                        );
+                        renderMessages();
+                    }
+                }
+            } catch (err) {
+                console.error("An unexpected error occurred:", err);
+                showNotification("An error occurred while sending your message");
+                
+                // Remove the temporary message
+                messages = messages.filter(m => m.id !== tempMessage.id);
+                renderMessages();
+            } finally {
+                // Re-enable the send button
+                sendButton.disabled = false;
+            }
+        };
+
+        // Event Listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Initial fetch to get the user and start the chat
+        fetchUser();
+    </script>
+</body>
+</html>

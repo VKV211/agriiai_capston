@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medicine Finder - AgriAI</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 15px;
+            background-color: #ffffff;
+            text-align: center;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+        }
+
+        .back-button:hover {
+            background-color: #2980b9;
+        }
+
+        .back-button-text {
+            font-weight: bold;
+            font-size: 14px;
+            margin-left: 5px;
+        }
+
+        .header-title-container {
+            flex: 1;
+            text-align: center;
+        }
+
+        .header-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .header-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-top: 3px;
+        }
+
+        .compact-top-view {
+            background-color: #ffffff;
+            padding: 0 15px 10px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .search-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 0;
+        }
+
+        .search-input {
+            flex: 1;
+            max-width: 70%;
+            border: 1px solid #e9ecef;
+            padding: 8px;
+            border-radius: 5px;
+            margin-right: 10px;
+            background-color: #f8f9fa;
+        }
+
+        .search-button {
+            background-color: #3498db;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .search-button:hover {
+            background-color: #2980b9;
+        }
+
+        .search-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .categories-container {
+            padding: 8px 0;
+        }
+
+        .categories-list {
+            display: flex;
+            justify-content: center;
+            overflow-x: auto;
+            padding: 5px 0;
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE and Edge */
+        }
+
+        .categories-list::-webkit-scrollbar {
+            display: none; /* Chrome, Safari, Opera */
+        }
+
+        .category-button {
+            padding: 6px 12px;
+            border-radius: 15px;
+            margin-right: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .category-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .category-button-text {
+            font-weight: bold;
+            font-size: 13px;
+        }
+
+        .sort-container {
+            display: flex;
+            justify-content: flex-end;
+            padding: 5px 0;
+        }
+
+        .sort-button {
+            background-color: #3498db;
+            padding: 8px 12px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.2s;
+        }
+
+        .sort-button:hover {
+            background-color: #2980b9;
+        }
+
+        .sort-button-text {
+            font-weight: bold;
+            color: #fff;
+            margin-right: 5px;
+            font-size: 13px;
+        }
+
+        .sort-icon {
+            color: #fff;
+            font-size: 10px;
+        }
+
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+            flex: 1;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #3b82f6;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 10px;
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        .error-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .error-text {
+            font-size: 16px;
+            color: #e74c3c;
+            text-align: center;
+        }
+
+        .medicines-list-container {
+            padding: 15px;
+            flex: 1;
+        }
+
+        .medicine-card {
+            background-color: #ffffff;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .medicine-content {
+            display: flex;
+            padding: 15px;
+        }
+
+        .image-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-right: 15px;
+        }
+
+        .medicine-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .medicine-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .medicine-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+
+        .medicine-subtitle {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 8px;
+        }
+
+        .rating-container {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .rating-text {
+            font-size: 14px;
+            font-weight: bold;
+            color: #f39c12;
+        }
+
+        .reviews-text {
+            font-size: 12px;
+            color: #7f8c8d;
+            margin-left: 5px;
+        }
+
+        .medicine-description {
+            font-size: 13px;
+            color: #34495e;
+            margin-bottom: 10px;
+            line-height: 18px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .buy-button {
+            background-color: #3498db;
+            padding: 8px 15px;
+            border-radius: 5px;
+            align-self: flex-start;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .buy-button:hover {
+            background-color: #2980b9;
+        }
+
+        .buy-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .empty-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            flex: 1;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            color: #7f8c8d;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            width: 80%;
+            max-width: 400px;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .sort-option {
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            cursor: pointer;
+        }
+
+        .sort-option:hover {
+            background-color: #f8f9fa;
+        }
+
+        .radio-button-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .radio-button {
+            height: 20px;
+            width: 20px;
+            border-radius: 10px;
+            border: 2px solid #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 12px;
+        }
+
+        .radio-button.selected {
+            border-color: #3498db;
+        }
+
+        .radio-button-inner {
+            height: 10px;
+            width: 10px;
+            border-radius: 5px;
+            background-color: #3498db;
+        }
+
+        .sort-option-text {
+            font-size: 16px;
+            color: #2c3e50;
+        }
+
+        .close-button {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #3498db;
+            border-radius: 5px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .close-button:hover {
+            background-color: #2980b9;
+        }
+
+        .close-button-text {
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .medicine-content {
+                flex-direction: column;
+            }
+
+            .image-container {
+                width: 100%;
+                height: 200px;
+                margin-right: 0;
+                margin-bottom: 15px;
+            }
+
+            .search-input {
+                max-width: 60%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .search-container {
+                flex-direction: column;
+            }
+
+            .search-input {
+                max-width: 100%;
+                margin-right: 0;
+                margin-bottom: 10px;
+            }
+
+            .search-button {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <button class="back-button" id="backButton">
+                <i class="fas fa-arrow-left"></i>
+                <span class="back-button-text">Back</span>
+            </button>
+            <div class="header-title-container">
+                <h1 class="header-title">Medicine Finder</h1>
+                <p class="header-subtitle">Find right medicine for your plants</p>
+            </div>
+            <div style="width: 100px;"></div> <!-- Empty div for balance -->
+        </div>
+
+        <div class="compact-top-view">
+            <div class="search-container">
+                <input 
+                    type="text" 
+                    class="search-input" 
+                    id="searchInput"
+                    placeholder="Search by disease or medicine..."
+                >
+                <button class="search-button" id="searchButton">
+                    <span class="search-button-text">SEARCH</span>
+                </button>
+            </div>
+
+            <div class="categories-container">
+                <div class="categories-list" id="categoriesList">
+                    <!-- Categories will be dynamically added here -->
+                </div>
+            </div>
+
+            <div class="sort-container">
+                <button class="sort-button" id="sortButton">
+                    <span class="sort-button-text" id="sortButtonText">Sort: Default</span>
+                    <span class="sort-icon">▼</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="loadingContainer" class="loading-container" style="display: none;">
+            <div class="spinner"></div>
+            <span class="loading-text">Loading medicines...</span>
+        </div>
+
+        <div id="errorContainer" class="error-container" style="display: none;">
+            <span class="error-text" id="errorText"></span>
+        </div>
+
+        <div id="medicinesListContainer" class="medicines-list-container">
+            <!-- Medicines will be dynamically added here -->
+        </div>
+
+        <!-- Sort Modal -->
+        <div id="sortModal" class="modal-overlay">
+            <div class="modal-content">
+                <h2 class="modal-title">Sort By</h2>
+                <div id="sortOptionsList">
+                    <!-- Sort options will be dynamically added here -->
+                </div>
+                <button class="close-button" id="closeModalButton">
+                    <span class="close-button-text">Close</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // State variables
+        let query = "";
+        let medicines = [];
+        let categories = [];
+        let sortOptions = [];
+        let selectedCategory = "all";
+        let selectedSort = "default";
+        let loading = false;
+        let showSortModal = false;
+        let error = null;
+
+        // DOM elements
+        const searchInput = document.getElementById('searchInput');
+        const searchButton = document.getElementById('searchButton');
+        const categoriesList = document.getElementById('categoriesList');
+        const sortButton = document.getElementById('sortButton');
+        const sortButtonText = document.getElementById('sortButtonText');
+        const loadingContainer = document.getElementById('loadingContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorText = document.getElementById('errorText');
+        const medicinesListContainer = document.getElementById('medicinesListContainer');
+        const sortModal = document.getElementById('sortModal');
+        const sortOptionsList = document.getElementById('sortOptionsList');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const backButton = document.getElementById('backButton');
+
+        // Initialize the page
+        function init() {
+            fetchCategoriesAndSorts();
+            handleSearch("all"); // Load all medicines initially
+            
+            // Event listeners
+            searchButton.addEventListener('click', () => handleSearch());
+            searchInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    handleSearch();
+                }
+            });
+            sortButton.addEventListener('click', () => {
+                sortModal.classList.add('active');
+                showSortModal = true;
+            });
+            closeModalButton.addEventListener('click', () => {
+                sortModal.classList.remove('active');
+                showSortModal = false;
+            });
+            backButton.addEventListener('click', () => {
+                window.location.href = 'index.html';
+            });
+        }
+
+        // Fetch categories and sort options
+        function fetchCategoriesAndSorts() {
+            try {
+                // Static categories based on the original component
+                const staticCategories = [
+                    { id: "all", name: "All", color: "#059669" },
+                    { id: "fungal", name: "Fungal", color: "#3b82f6" },
+                    { id: "bacterial", name: "Bacterial", color: "#f59e0b" },
+                    { id: "viral", name: "Viral", color: "#ec4899" },
+                    { id: "pest", name: "Pest", color: "#ef4444" },
+                    { id: "healthy", name: "Healthy", color: "#10b981" }
+                ];
+
+                const staticSorts = [
+                    { id: "default", name: "Default" },
+                    { id: "rating", name: "Top Rated" },
+                    { id: "reviews", name: "Most Reviews" },
+                    { id: "name_az", name: "Name: A to Z" },
+                    { id: "name_za", name: "Name: Z to A" }
+                ];
+
+                categories = staticCategories;
+                sortOptions = staticSorts;
+                
+                renderCategories();
+                renderSortOptions();
+            } catch (error) {
+                console.error("Error fetching categories:", error);
+                setError("Failed to load categories");
+            }
+        }
+
+        // Render category buttons
+        function renderCategories() {
+            categoriesList.innerHTML = '';
+            categories.forEach(category => {
+                const categoryButton = document.createElement('button');
+                categoryButton.className = 'category-button';
+                categoryButton.style.backgroundColor = selectedCategory === category.id ? category.color : '#f0f0f0';
+                
+                const categoryText = document.createElement('span');
+                categoryText.className = 'category-button-text';
+                categoryText.style.color = selectedCategory === category.id ? '#fff' : '#333';
+                categoryText.textContent = category.name;
+                
+                categoryButton.appendChild(categoryText);
+                categoryButton.addEventListener('click', () => handleCategoryPress(category.id));
+                
+                categoriesList.appendChild(categoryButton);
+            });
+        }
+
+        // Render sort options
+        function renderSortOptions() {
+            sortOptionsList.innerHTML = '';
+            sortOptions.forEach(option => {
+                const sortOption = document.createElement('div');
+                sortOption.className = 'sort-option';
+                
+                const radioButtonContainer = document.createElement('div');
+                radioButtonContainer.className = 'radio-button-container';
+                
+                const radioButton = document.createElement('div');
+                radioButton.className = 'radio-button';
+                if (selectedSort === option.id) {
+                    radioButton.classList.add('selected');
+                    
+                    const radioButtonInner = document.createElement('div');
+                    radioButtonInner.className = 'radio-button-inner';
+                    radioButton.appendChild(radioButtonInner);
+                }
+                
+                const sortOptionText = document.createElement('span');
+                sortOptionText.className = 'sort-option-text';
+                sortOptionText.textContent = option.name;
+                
+                radioButtonContainer.appendChild(radioButton);
+                radioButtonContainer.appendChild(sortOptionText);
+                
+                sortOption.appendChild(radioButtonContainer);
+                sortOption.addEventListener('click', () => handleSortChange(option.id));
+                
+                sortOptionsList.appendChild(sortOption);
+            });
+        }
+
+        // Handle category selection
+        function handleCategoryPress(categoryId) {
+            selectedCategory = categoryId;
+            renderCategories();
+            
+            if (selectedCategory !== "all") {
+                handleSearch(selectedCategory);
+            } else {
+                handleSearch("all");
+            }
+        }
+
+        // Handle sort change
+        function handleSortChange(sortId) {
+            selectedSort = sortId;
+            sortButtonText.textContent = `Sort: ${sortOptions.find(s => s.id === sortId)?.name || "Default"}`;
+            sortModal.classList.remove('active');
+            showSortModal = false;
+            
+            // Re-fetch and sort medicines
+            if (selectedCategory !== "all") {
+                handleSearch(selectedCategory);
+            } else {
+                handleSearch("all");
+            }
+        }
+
+        // Handle search
+        async function handleSearch(searchQuery = query) {
+            if (!searchQuery.trim() && searchQuery !== "all") return;
+
+            setLoading(true);
+            setError(null);
+
+            try {
+                const API_BASE_URL = "https://plant-ai-finder-med.onrender.com/search";
+                const response = await fetch(`${API_BASE_URL}?query=${encodeURIComponent(searchQuery)}`);
+                const data = await response.json();
+
+                if (data.message) {
+                    medicines = [];
+                } else {
+                    let results = data.results || [];
+                    // Apply sorting if needed
+                    if (selectedSort !== "default") {
+                        results = sortMedicines(results, selectedSort);
+                    }
+                    medicines = results;
+                }
+                
+                renderMedicines();
+            } catch (error) {
+                console.error("Error fetching medicines:", error);
+                setError("Failed to fetch medicines. Please try again.");
+                alert("Error", "Failed to fetch medicines. Please try again.");
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // Sort medicines
+        function sortMedicines(medicinesList, sortType) {
+            const sorted = [...medicinesList];
+            
+            switch (sortType) {
+                case "rating":
+                    return sorted.sort((a, b) => {
+                        return parseFloat(b.rating) - parseFloat(a.rating);
+                    });
+                case "reviews":
+                    return sorted.sort((a, b) => {
+                        return parseInt(b.reviews) - parseInt(a.reviews);
+                    });
+                case "name_az":
+                    return sorted.sort((a, b) => {
+                        return a.title.localeCompare(b.title);
+                    });
+                case "name_za":
+                    return sorted.sort((a, b) => {
+                        return b.title.localeCompare(a.title);
+                    });
+                default:
+                    return sorted;
+            }
+        }
+
+        // Render medicines
+        function renderMedicines() {
+            medicinesListContainer.innerHTML = '';
+            
+            if (medicines.length === 0) {
+                const emptyContainer = document.createElement('div');
+                emptyContainer.className = 'empty-container';
+                
+                const emptyText = document.createElement('span');
+                emptyText.className = 'empty-text';
+                emptyText.textContent = 'No medicines found';
+                
+                emptyContainer.appendChild(emptyText);
+                medicinesListContainer.appendChild(emptyContainer);
+            } else {
+                medicines.forEach(medicine => {
+                    const medicineCard = document.createElement('div');
+                    medicineCard.className = 'medicine-card';
+                    
+                    const medicineContent = document.createElement('div');
+                    medicineContent.className = 'medicine-content';
+                    
+                    const imageContainer = document.createElement('div');
+                    imageContainer.className = 'image-container';
+                    
+                    const medicineImage = document.createElement('img');
+                    medicineImage.className = 'medicine-image';
+                    medicineImage.src = medicine.image;
+                    medicineImage.alt = medicine.title;
+                    
+                    imageContainer.appendChild(medicineImage);
+                    
+                    const medicineInfo = document.createElement('div');
+                    medicineInfo.className = 'medicine-info';
+                    
+                    const medicineTitle = document.createElement('h3');
+                    medicineTitle.className = 'medicine-title';
+                    medicineTitle.textContent = medicine.title;
+                    
+                    const medicineSubtitle = document.createElement('p');
+                    medicineSubtitle.className = 'medicine-subtitle';
+                    medicineSubtitle.textContent = medicine.subtitle;
+                    
+                    const ratingContainer = document.createElement('div');
+                    ratingContainer.className = 'rating-container';
+                    
+                    const ratingText = document.createElement('span');
+                    ratingText.className = 'rating-text';
+                    ratingText.textContent = `⭐ ${medicine.rating}`;
+                    
+                    const reviewsText = document.createElement('span');
+                    reviewsText.className = 'reviews-text';
+                    reviewsText.textContent = `(${medicine.reviews} reviews)`;
+                    
+                    ratingContainer.appendChild(ratingText);
+                    ratingContainer.appendChild(reviewsText);
+                    
+                    const medicineDescription = document.createElement('p');
+                    medicineDescription.className = 'medicine-description';
+                    medicineDescription.textContent = medicine.description;
+                    
+                    const buyButton = document.createElement('button');
+                    buyButton.className = 'buy-button';
+                    buyButton.textContent = 'Buy Now';
+                    buyButton.addEventListener('click', () => handleBuyNow(medicine.storeUrl));
+                    
+                    medicineInfo.appendChild(medicineTitle);
+                    medicineInfo.appendChild(medicineSubtitle);
+                    medicineInfo.appendChild(ratingContainer);
+                    medicineInfo.appendChild(medicineDescription);
+                    medicineInfo.appendChild(buyButton);
+                    
+                    medicineContent.appendChild(imageContainer);
+                    medicineContent.appendChild(medicineInfo);
+                    
+                    medicineCard.appendChild(medicineContent);
+                    medicinesListContainer.appendChild(medicineCard);
+                });
+            }
+        }
+
+        // Handle buy now button click
+        function handleBuyNow(url) {
+            if (url) {
+                window.open(url, '_blank').catch(err => {
+                    console.error("Failed to open URL:", err);
+                    alert("Error", "Could not open store link");
+                });
+            } else {
+                alert("Error", "Store link not available");
+            }
+        }
+
+        // Set loading state
+        function setLoading(isLoading) {
+            loading = isLoading;
+            if (isLoading) {
+                loadingContainer.style.display = 'flex';
+                medicinesListContainer.style.display = 'none';
+                errorContainer.style.display = 'none';
+            } else {
+                loadingContainer.style.display = 'none';
+                medicinesListContainer.style.display = 'block';
+            }
+        }
+
+        // Set error state
+        function setError(errorMessage) {
+            error = errorMessage;
+            if (errorMessage) {
+                errorText.textContent = errorMessage;
+                errorContainer.style.display = 'flex';
+                medicinesListContainer.style.display = 'none';
+            } else {
+                errorContainer.style.display = 'none';
+            }
+        }
+
+        // Initialize the page when DOM is loaded
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
