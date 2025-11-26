@@ -466,7 +466,7 @@
                         }
                     } else {
                         // If no user, redirect to login page
-                        window.location.href = 'start.html';
+                        window.location.href = 'index.html';
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -484,7 +484,7 @@
                         alert('Logout failed: ' + error.message);
                     } else {
                         // Redirect to login page after successful logout
-                        window.location.href = 'start.html';
+                        window.location.href = 'index.html';
                     }
                 } catch (error) {
                     console.error('Error:', error);
@@ -525,10 +525,11 @@
                         }
                     })();
                 } else if (event === 'SIGNED_OUT') {
-                    window.location.href = 'start.html';
+                    window.location.href = 'index.html';
                 }
             });
         });
     </script>
 </body>
 </html>
+
