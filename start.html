@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriAI - AI-Powered Crop Disease Detection</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: #f9fafb;
+            color: #1f2937;
+            line-height: 1.6;
+        }
+
+        /* Navigation */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff;
+            padding: 12px 16px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #15803d;
+            margin-left: 8px;
+        }
+
+        .nav-items {
+            display: flex;
+            align-items: center;
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0 10px;
+            font-weight: 500;
+            color: #16a34a;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .nav-item:hover {
+            color: #15803d;
+        }
+
+        .nav-buttons-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .login-button {
+            background-color: #f0fdf4;
+            border: 1px solid #16a34a;
+            padding: 8px 16px;
+            border-radius: 6px;
+            margin-right: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .login-button:hover {
+            background-color: #dcfce7;
+        }
+
+        .signup-button {
+            background-color: #16a34a;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+
+        .signup-button:hover {
+            background-color: #15803d;
+        }
+
+        .mobile-menu-toggle {
+            display: none;
+            background: none;
+            border: none;
+            color: #16a34a;
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            background-color: #fff;
+            padding: 16px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .mobile-menu-item {
+            padding: 8px 0;
+            font-size: 16px;
+            color: #16a34a;
+            cursor: pointer;
+            text-decoration: none;
+            display: block;
+        }
+
+        .mobile-login-button {
+            background-color: #f0fdf4;
+            border: 1px solid #16a34a;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-top: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .mobile-signup-button {
+            background-color: #16a34a;
+            padding: 10px 16px;
+            border-radius: 6px;
+            margin-top: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        /* Hero Section */
+        .hero {
+            background: linear-gradient(to right, #4ade80, #22c55e);
+            padding: 60px 16px;
+            text-align: center;
+        }
+
+        .hero-title {
+            font-size: 32px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .hero-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+        }
+
+        .hero-buttons {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 40px;
+            gap: 16px;
+        }
+
+        .try-now-button {
+            background-color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .try-now-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .watch-demo-button {
+            border: 2px solid #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .watch-demo-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .hero-image-container {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .hero-image {
+            width: 80%;
+            height: auto;
+            border-radius: 12px;
+            max-height: 800px;
+            object-fit: cover;
+        }
+
+        .accuracy-badge {
+            position: absolute;
+            bottom: -24px;
+            right: 10%;
+            background-color: #fff;
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .badge-icon-container {
+            background-color: #dcfce7;
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-right: 12px;
+        }
+
+        .badge-title {
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .badge-subtitle {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Section Styles */
+        .section {
+            padding: 40px 16px;
+            background-color: #f9fafb;
+        }
+
+        .section-title {
+            font-size: 28px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: #6b7280;
+            text-align: center;
+            margin-bottom: 40px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Features */
+        .features-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .feature-card {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            width: calc(33.333% - 16px);
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transition: transform 0.2s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-icon-container {
+            background-color: #dcfce7;
+            width: 56px;
+            height: 56px;
+            border-radius: 28px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 16px;
+        }
+
+        .feature-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #1f2937;
+        }
+
+        .feature-desc {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        /* Workflow */
+        .workflow-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 40px;
+            gap: 16px;
+        }
+
+        .workflow-step {
+            text-align: center;
+            width: calc(25% - 16px);
+        }
+
+        .step-number-container {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            background-color: #dcfce7;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 16px;
+        }
+
+        .step-number {
+            font-weight: bold;
+            color: #16a34a;
+            font-size: 24px;
+        }
+
+        .workflow-title {
+            font-weight: bold;
+            font-size: 18px;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+
+        .workflow-desc {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        /* Technology Section */
+        .tech-container {
+            background-color: #f3f4f6;
+            padding: 24px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .tech-text-container {
+            margin-bottom: 24px;
+            text-align: center;
+        }
+
+        .tech-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .tech-description {
+            font-size: 16px;
+            color: #6b7280;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .tech-list {
+            text-align: left;
+            max-width: 500px;
+        }
+
+        .tech-item {
+            font-size: 16px;
+            color: #4b5563;
+            margin-bottom: 8px;
+        }
+
+        .tech-image {
+            width: 60%;
+            height: auto;
+            border-radius: 8px;
+            max-height: 600px;
+            object-fit: cover;
+        }
+
+        /* About Section */
+        .about-content {
+            margin-bottom: 32px;
+        }
+
+        .about-text-container {
+            margin-bottom: 24px;
+        }
+
+        .about-text {
+            font-size: 16px;
+            color: #4b5563;
+            line-height: 1.5;
+            margin-bottom: 16px;
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 24px;
+        }
+
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #16a34a;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #6b7280;
+        }
+
+        /* Technology Stack */
+        .tech-stack-container {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .tech-stack-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        .progress-bar-container {
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .progress-bar-label {
+            font-size: 16px;
+            color: #4b5563;
+        }
+
+        .progress-bar-value {
+            font-size: 16px;
+            color: #4b5563;
+            font-weight: 500;
+        }
+
+        .progress-bar-background {
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 4px;
+            margin-bottom: 16px;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background-color: #16a34a;
+            border-radius: 4px;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: linear-gradient(to right, #16a34a, #15803d);
+            padding: 60px 16px;
+            text-align: center;
+        }
+
+        .cta-title {
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .cta-subtitle {
+            font-size: 18px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 32px;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .cta-primary-button {
+            background-color: #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #16a34a;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .cta-primary-button:hover {
+            transform: translateY(-2px);
+        }
+
+        .cta-secondary-button {
+            border: 2px solid #fff;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            text-decoration: none;
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+            transition: transform 0.2s;
+        }
+
+        .cta-secondary-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Contact Section */
+        .contact-container {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .contact-form {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-form-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 16px;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-input {
+            width: 100%;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 12px;
+            background-color: #fff;
+        }
+
+        .form-textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .submit-button {
+            background-color: #16a34a;
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .submit-button:hover {
+            background-color: #15803d;
+        }
+
+        .submit-button-text {
+            color: #fff;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .contact-info {
+            background-color: #fff;
+            padding: 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .contact-info-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+
+        .contact-info-item {
+            display: flex;
+            margin-bottom: 24px;
+            align-items: flex-start;
+        }
+
+        .contact-info-item i {
+            color: #16a34a;
+            margin-right: 16px;
+            margin-top: 2px;
+        }
+
+        .contact-info-label {
+            font-size: 16px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 4px;
+        }
+
+        .contact-info-text {
+            font-size: 14px;
+            color: #4b5563;
+            line-height: 1.5;
+        }
+
+        .social-container {
+            margin-top: 24px;
+        }
+
+        .social-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 16px;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .social-button {
+            background-color: #dcfce7;
+            width: 40px;
+            height: 40px;
+            border-radius: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #16a34a;
+            transition: transform 0.2s;
+        }
+
+        .social-button:hover {
+            transform: translateY(-2px);
+        }
+
+        /* Footer */
+        .footer {
+            background-color: #1f2937;
+            padding: 40px 16px;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            margin-bottom: 32px;
+        }
+
+        .footer-section {
+            width: calc(25% - 16px);
+            margin-bottom: 24px;
+        }
+
+        .footer-logo {
+            display: flex;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .footer-logo-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4ade80;
+            margin-left: 8px;
+        }
+
+        .footer-description {
+            font-size: 14px;
+            color: #d1d5db;
+            line-height: 1.5;
+        }
+
+        .footer-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 16px;
+        }
+
+        .footer-link {
+            display: block;
+            font-size: 14px;
+            color: #d1d5db;
+            margin-bottom: 8px;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-link:hover {
+            color: #4ade80;
+        }
+
+        .footer-newsletter-text {
+            font-size: 14px;
+            color: #d1d5db;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .newsletter-form {
+            display: flex;
+        }
+
+        .newsletter-input {
+            flex: 1;
+            border: 1px solid #374151;
+            border-top-left-radius: 6px;
+            border-bottom-left-radius: 6px;
+            padding: 10px 12px;
+            background-color: #111827;
+            color: #fff;
+        }
+
+        .newsletter-button {
+            background-color: #16a34a;
+            padding: 10px 16px;
+            border-top-right-radius: 6px;
+            border-bottom-right-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .newsletter-button:hover {
+            background-color: #15803d;
+        }
+
+        .newsletter-button-text {
+            color: #fff;
+            font-weight: 500;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 16px;
+            text-align: center;
+        }
+
+        .footer-copyright {
+            font-size: 14px;
+            color: #9ca3af;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .nav-items {
+                display: none;
+            }
+
+            .mobile-menu-toggle {
+                display: block;
+            }
+
+            .mobile-menu.active {
+                display: block;
+            }
+
+            .feature-card {
+                width: 100%;
+            }
+
+            .workflow-step {
+                width: calc(50% - 16px);
+            }
+
+            .hero-image {
+                width: 100%;
+            }
+
+            .accuracy-badge {
+                right: 5%;
+            }
+
+            .footer-section {
+                width: 100%;
+            }
+
+            .stats-container {
+                flex-direction: column;
+                gap: 16px;
+            }
+
+            .tech-image {
+                width: 100%;
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                gap: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .workflow-step {
+                width: 100%;
+            }
+
+            .hero-title {
+                font-size: 24px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="logo-container">
+            <i class="fas fa-seedling" style="color: #2cd46aff; font-size: 24px;"></i>
+            <span class="logo-text">AgriAI</span>
+        </div>
+        
+        <!-- Desktop Navigation -->
+        <ul class="nav-items">
+            <li><a href="#home" class="nav-item">Home</a></li>
+            <li><a href="#features" class="nav-item">Features</a></li>
+            <li><a href="#workflow" class="nav-item">Workflow</a></li>
+            <li><a href="#about" class="nav-item">About</a></li>
+            <li><a href="#contact" class="nav-item">Contact</a></li>
+        </ul>
+        
+        <!-- Right-aligned Login/Signup Buttons -->
+        <div class="nav-buttons-container">
+            <a href="login.html" class="login-button">Login</a>
+            <a href="signup.html" class="signup-button">Sign Up</a>
+            <button class="mobile-menu-toggle" id="mobileMenuToggle">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="#home" class="mobile-menu-item">Home</a>
+        <a href="#features" class="mobile-menu-item">Features</a>
+        <a href="#workflow" class="mobile-menu-item">Workflow</a>
+        <a href="#about" class="mobile-menu-item">About</a>
+        <a href="#contact" class="mobile-menu-item">Contact</a>
+        <a href="login.html" class="mobile-login-button">Login</a>
+        <a href="signup.html" class="mobile-signup-button">Sign Up</a>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1 class="hero-title">AI-Powered Crop Disease Detection</h1>
+            <p class="hero-subtitle">Protect your crops with early disease detection and AI-driven treatment recommendations</p>
+            
+            <div class="hero-buttons">
+                <a href="signup.html" class="try-now-button">Try Now</a>
+                <a href="#" class="watch-demo-button" onclick="alert('Demo: This would open a demo video')">Watch Demo</a>
+            </div>
+            
+            <div class="hero-image-container">
+                <img src="far.jpg" alt="Farmer with crops" class="hero-image">
+                <div class="accuracy-badge">
+                    <div class="badge-icon-container">
+                        <i class="fas fa-check" style="color: #16a34a;"></i>
+                    </div>
+                    <div>
+                        <div class="badge-title">99% Accuracy</div>
+                        <div class="badge-subtitle">Disease Detection</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="section" id="features">
+        <h2 class="section-title">Powerful Features</h2>
+        <p class="section-subtitle">Our AI-driven system provides comprehensive tools for crop disease management</p>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <i class="fas fa-camera" style="color: #16a34a; font-size: 24px;"></i>
+                </div>
+                <h3 class="feature-title">Image Analysis</h3>
+                <p class="feature-desc">Upload crop images and get instant disease identification with our advanced computer vision algorithms</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <i class="fas fa-cloud-sun" style="color: #16a34a; font-size: 24px;"></i>
+                </div>
+                <h3 class="feature-title">Weather Integration</h3>
+                <p class="feature-desc">Real-time weather data analysis to predict disease outbreaks based on environmental conditions</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <i class="fas fa-brain" style="color: #16a34a; font-size: 24px;"></i>
+                </div>
+                <h3 class="feature-title">AI Recommendations</h3>
+                <p class="feature-desc">Personalized treatment and prevention suggestions powered by advanced AI models</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <i class="fas fa-mobile-alt" style="color: #16a34a; font-size: 24px;"></i>
+                </div>
+                <h3 class="feature-title">Mobile Access</h3>
+                <p class="feature-desc">Use our system anywhere with our mobile-friendly application for on-the-go disease detection</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <i class="fas fa-history" style="color: #16a34a; font-size: 24px;"></i>
+                </div>
+                <h3 class="feature-title">Disease History</h3>
+                <p class="feature-desc">Track disease patterns and treatment effectiveness over time for better crop management</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon-container">
+                    <i class="fas fa-users" style="color: #16a34a; font-size: 24px;"></i>
+                </div>
+                <h3 class="feature-title">Expert Network</h3>
+                <p class="feature-desc">Connect with agricultural experts for additional advice and consultation when needed</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Workflow Section -->
+    <section class="section" id="workflow">
+        <h2 class="section-title">How It Works</h2>
+        <p class="section-subtitle">Our simple 4-step process to protect your crops</p>
+        
+        <div class="workflow-container">
+            <div class="workflow-step">
+                <div class="step-number-container">
+                    <span class="step-number">1</span>
+                </div>
+                <h3 class="workflow-title">Upload Image</h3>
+                <p class="workflow-desc">Take a photo or upload an image of your crop</p>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number-container">
+                    <span class="step-number">2</span>
+                </div>
+                <h3 class="workflow-title">AI Analysis</h3>
+                <p class="workflow-desc">Our system analyzes the image and weather data</p>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number-container">
+                    <span class="step-number">3</span>
+                </div>
+                <h3 class="workflow-title">Get Diagnosis</h3>
+                <p class="workflow-desc">Receive disease identification and confidence level</p>
+            </div>
+            
+            <div class="workflow-step">
+                <div class="step-number-container">
+                    <span class="step-number">4</span>
+                </div>
+                <h3 class="workflow-title">Treatment Plan</h3>
+                <p class="workflow-desc">Follow AI-recommended treatment steps</p>
+            </div>
+        </div>
+        
+        <div class="tech-container">
+            <div class="tech-text-container">
+                <h3 class="tech-title">Advanced Technology Behind the Scenes</h3>
+                <p class="tech-description">Our system combines cutting-edge technologies to provide accurate disease detection and treatment recommendations:</p>
+                
+                <div class="tech-list">
+                    <p class="tech-item">• Computer Vision for image analysis</p>
+                    <p class="tech-item">• Machine Learning models for disease prediction</p>
+                    <p class="tech-item">• Real-time weather data integration</p>
+                    <p class="tech-item">• AI-powered recommendation engine</p>
+                </div>
+            </div>
+            
+            <img src="wf.jpg" alt="Technology" class="tech-image">
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="section" id="about">
+        <h2 class="section-title">About AgriAI</h2>
+        
+        <div class="about-content">
+            <div class="about-text-container">
+                <p class="about-text">
+                    Crop diseases can devastate yields, leading to significant financial losses for farmers worldwide.
+                    Early detection and timely intervention are crucial for effective disease management.
+                </p>
+                <p class="about-text">
+                    AgriAI was developed to address this challenge by leveraging artificial intelligence and machine learning
+                    to create a comprehensive crop disease prediction and management system.
+                </p>
+                <p class="about-text">
+                    Our mission is to empower farmers with technology that helps them protect their crops, increase yields,
+                    and promote sustainable agricultural practices.
+                </p>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-number">99%</div>
+                    <div class="stat-label">Detection Accuracy</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">24/7</div>
+                    <div class="stat-label">Availability</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Diseases Detected</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="tech-stack-container">
+            <h3 class="tech-stack-title">Our Technology Stack</h3>
+            
+            <div class="progress-bar-container">
+                <div>
+                    <div class="progress-bar-header">
+                        <span class="progress-bar-label">Computer Vision</span>
+                        <span class="progress-bar-value">98%</span>
+                    </div>
+                    <div class="progress-bar-background">
+                        <div class="progress-bar-fill" style="width: 98%"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="progress-bar-header">
+                        <span class="progress-bar-label">Machine Learning</span>
+                        <span class="progress-bar-value">96%</span>
+                    </div>
+                    <div class="progress-bar-background">
+                        <div class="progress-bar-fill" style="width: 96%"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="progress-bar-header">
+                        <span class="progress-bar-label">Weather Analysis</span>
+                        <span class="progress-bar-value">94%</span>
+                    </div>
+                    <div class="progress-bar-background">
+                        <div class="progress-bar-fill" style="width: 94%"></div>
+                    </div>
+                </div>
+                
+                <div>
+                    <div class="progress-bar-header">
+                        <span class="progress-bar-label">Recommendation Engine</span>
+                        <span class="progress-bar-value">92%</span>
+                    </div>
+                    <div class="progress-bar-background">
+                        <div class="progress-bar-fill" style="width: 92%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <h2 class="cta-title">Ready to Protect Your Crops?</h2>
+        <p class="cta-subtitle">Join thousands of farmers using AgriAI to increase yields and prevent crop losses</p>
+        
+        <div class="cta-buttons">
+            <a href="signup.html" class="cta-primary-button">Get Started for Free</a>
+            <a href="#" class="cta-secondary-button" onclick="alert('Demo: This would open a demo video')">Schedule a Demo</a>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="section" id="contact">
+        <h2 class="section-title">Contact Us</h2>
+        <p class="section-subtitle">Have questions or need support? Reach out to our team</p>
+        
+        <div class="contact-container">
+            <div class="contact-form">
+                <h3 class="contact-form-title">Send us a message</h3>
+                
+                <div class="form-group">
+                    <label class="form-label">Name</label>
+                    <input type="text" class="form-input" placeholder="Your name">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-input" placeholder="Your email">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Subject</label>
+                    <input type="text" class="form-input" placeholder="Subject">
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Message</label>
+                    <textarea class="form-input form-textarea" placeholder="Your message"></textarea>
+                </div>
+                
+                <button class="submit-button" onclick="alert('Success: Thank you for your message! We will get back to you soon.')">
+                    <span class="submit-button-text">Send Message</span>
+                </button>
+            </div>
+            
+            <div class="contact-info">
+                <h3 class="contact-info-title">Contact Information</h3>
+                
+                <div class="contact-info-item">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <div>
+                        <div class="contact-info-label">Our Location</div>
+                        <div class="contact-info-text">123 AgriTech Park, Farmville, CA 90210</div>
+                    </div>
+                </div>
+                
+                <div class="contact-info-item">
+                    <i class="fas fa-phone"></i>
+                    <div>
+                        <div class="contact-info-label">Phone</div>
+                        <div class="contact-info-text">+1 (555) 123-4567</div>
+                    </div>
+                </div>
+                
+                <div class="contact-info-item">
+                    <i class="fas fa-envelope"></i>
+                    <div>
+                        <div class="contact-info-label">Email</div>
+                        <div class="contact-info-text">support@agriai.com</div>
+                    </div>
+                </div>
+                
+                <div class="contact-info-item">
+                    <i class="fas fa-clock"></i>
+                    <div>
+                        <div class="contact-info-label">Working Hours</div>
+                        <div class="contact-info-text">Mon-Fri: 9am - 5pm<br>Sat-Sun: Closed</div>
+                    </div>
+                </div>
+                
+                <div class="social-container">
+                    <h3 class="social-title">Follow Us</h3>
+                    <div class="social-buttons">
+                        <a href="#" class="social-button">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="social-button">
+                            <i class="fab fa-twitter"></i>
+                        </a>
+                        <a href="#" class="social-button">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="social-button">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                        <a href="#" class="social-button">
+                            <i class="fab fa-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <div class="footer-logo">
+                    <i class="fas fa-seedling" style="color: #4ade80; font-size: 24px;"></i>
+                    <span class="footer-logo-text">AgriAI</span>
+                </div>
+                <p class="footer-description">
+                    AI-powered crop disease detection and management system for modern farmers.
+                </p>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Quick Links</h3>
+                <a href="#home" class="footer-link">Home</a>
+                <a href="#features" class="footer-link">Features</a>
+                <a href="#workflow" class="footer-link">How It Works</a>
+                <a href="#about" class="footer-link">About</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Resources</h3>
+                <a href="#" class="footer-link">Blog</a>
+                <a href="#" class="footer-link">Help Center</a>
+                <a href="#" class="footer-link">Farmers Guide</a>
+                <a href="#" class="footer-link">Research Papers</a>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Newsletter</h3>
+                <p class="footer-newsletter-text">
+                    Subscribe to get updates on new features and farming tips.
+                </p>
+                <div class="newsletter-form">
+                    <input type="email" class="newsletter-input" placeholder="Your email">
+                    <button class="newsletter-button">
+                        <span class="newsletter-button-text">Subscribe</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p class="footer-copyright">© 2023 AgriAI. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        document.getElementById('mobileMenuToggle').addEventListener('click', function() {
+            document.getElementById('mobileMenu').classList.toggle('active');
+            
+            // Toggle icon between bars and times
+            const icon = this.querySelector('i');
+            if (icon.classList.contains('fa-bars')) {
+                icon.classList.remove('fa-bars');
+                icon.classList.add('fa-times');
+            } else {
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            }
+        });
+
+        // Close mobile menu when clicking on a link
+        document.querySelectorAll('.mobile-menu-item').forEach(item => {
+            item.addEventListener('click', function() {
+                document.getElementById('mobileMenu').classList.remove('active');
+                const icon = document.querySelector('#mobileMenuToggle i');
+                icon.classList.remove('fa-times');
+                icon.classList.add('fa-bars');
+            });
+        });
+
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80, // Adjust for navbar height
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
